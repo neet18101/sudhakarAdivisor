@@ -6,15 +6,12 @@ import Colors from "../../constants/Colors";
 const Header = () => {
     return (
         <View style={styles.container}>
-            {/* StatusBar Settings */}
             <StatusBar
                 animated={true}
-                backgroundColor={colors.primary}  // Set background color of StatusBar
-                barStyle="light-content"          // Set StatusBar icons to white
-                translucent={false}               // Set to true if you want a transparent status bar
+                backgroundColor={colors.primary} 
+                barStyle="light-content"         
+                translucent={false}            
             />
-
-            {/* Header Section */}
             <View style={styles.header}>
                 <Image
                     source={avatar}

@@ -48,8 +48,8 @@ const CitiesPicker = ({ selectedValue, onValueChange, placeholder }) => {
                                     <TouchableOpacity
                                         style={styles.listItem}
                                         onPress={() => {
-                                            // console.log(item,"test");  // Log the item to console
-                                            onValueChange(item.City);  // Update the selected value
+                                         console.log(item);
+                                            onValueChange(item.StateID);  // Update the selected value
                                             setClicked(false);  // Close the modal after selecting
                                         }}
                                     >

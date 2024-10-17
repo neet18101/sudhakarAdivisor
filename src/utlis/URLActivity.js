@@ -33,6 +33,7 @@ const URLActivity = {
     GetTarunPlan: "http://paytds.com/Greetings/GetTarunPlan.aspx",
     FillpolicyTerm: "http://paytds.com/Greetings/FillpolicyTerm.aspx",
     GetLICJeevanPer: "http://paytds.com/Greetings/GetLICJeevanPer.aspx",
+    RegisterLICAgent:"http://paytds.com/JsonService/LICAgent.aspx"
 };
 
 export default URLActivity;

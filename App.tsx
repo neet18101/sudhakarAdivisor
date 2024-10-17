@@ -37,7 +37,7 @@ const App = () => {
   return (
     <AuthContextProvider>
       <NavigationContainer>
-      <Stack.Screen name="Splash" component={Splash} />
+      {/* <Stack.Screen name="Splash" component={Splash} /> */}
         {isLoggedIn ? <AppStack /> : <AuthStack />}
     
       </NavigationContainer>

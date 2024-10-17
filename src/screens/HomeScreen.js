@@ -9,6 +9,7 @@ import {
 import React, {useEffect, useState} from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Header from '../components/HomeScreen/Header';
+import { Colors } from '../constants';
 
 const HomeScreen = () => {
   const [username, setUsername] = useState('');
@@ -27,9 +28,9 @@ const HomeScreen = () => {
       <View style={styles.container}>
         <StatusBar
           animated={true}
-          backgroundColor={colors.primary} // Set background color of StatusBar
-          barStyle="light-content" // Set StatusBar icons to white
-          translucent={false} // Set to true if you want a transparent status bar
+          backgroundColor={Colors.primary} 
+          barStyle="light-content" 
+          translucent={false}
         />
         <Header />
       </View>
@@ -41,7 +42,7 @@ const styles = StyleSheet.create({
   container: {
     padding: 10,
     paddingTop: 25,
-    backgroundColor: colors.primary, // Background color of the whole container
+    backgroundColor: Colors.primary, // Background color of the whole container
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
   },
@@ -59,7 +60,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontFamily: 'OpenSans-SemiBold',
     fontWeight: '700',
-    color: colors.white,
+    color: Colors.white,
   },
 });
 
