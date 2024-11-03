@@ -1,48 +1,43 @@
-import {
-  View,
-  Text,
-  ImageBackground,
-  Image,
-  StyleSheet,
-  StatusBar,
-} from 'react-native';
-import React, {useEffect, useState} from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { useEffect, useState } from 'react';
+import {Image, Text, View, StyleSheet, StatusBar} from 'react-native';
+import colors from '../constants/Colors';
+import Slider from '../components/HomeScreen/Slider';
+import Fetaure from '../components/HomeScreen/Fetaure';
 import Header from '../components/HomeScreen/Header';
-import { Colors } from '../constants';
+import DeviceInfo from 'react-native-device-info';
 
-const HomeScreen = () => {
-  const [username, setUsername] = useState('');
-
+const Home = ({navigation}) => {
+  const [macAddress, setMacAddress] = useState('');
   useEffect(() => {
-    const fetchUsername = async () => {
-      const storedUsername = await AsyncStorage.getItem('username');
-      if (storedUsername) {
-        setUsername(storedUsername);
-      }
+    const fetchMacAddress = async () => {
+      const address = await DeviceInfo.getUniqueId();
+      setMacAddress(address);
     };
-    fetchUsername();
+    fetchMacAddress();
   }, []);
+  console.log(macAddress);
   return (
     <>
       <View style={styles.container}>
+        {/* StatusBar Settings */}
         <StatusBar
           animated={true}
-          backgroundColor={Colors.primary} 
-          barStyle="light-content" 
+          backgroundColor={colors.primary}
+          barStyle="light-content"
           translucent={false}
         />
-        <Header />
+
+        <Header navigation={navigation}/>
       </View>
+      <Slider />
+      <Fetaure navigation={navigation} />
     </>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    padding: 10,
-    paddingTop: 25,
-    backgroundColor: Colors.primary, // Background color of the whole container
+    backgroundColor: colors.primary, // Background color of the whole container
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
   },
@@ -60,8 +55,8 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontFamily: 'OpenSans-SemiBold',
     fontWeight: '700',
-    color: Colors.white,
+    color: colors.white,
   },
 });
 
-export default HomeScreen;
+export default Home;

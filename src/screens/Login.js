@@ -8,14 +8,15 @@ import {
   TouchableOpacity,
   TextInput,
   Alert,
-  Icon,
   ActivityIndicator,
 } from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 import logoImage from '../assets/images/logo.png';
 import {Colors} from '../constants';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {AuthContext} from '../utlis/AuthContext';
+import URLActivity from '../utlis/URLActivity';
 
 export default function Login({navigation}) {
   const {login, userToken, isloading} = useContext(AuthContext);
@@ -23,28 +24,36 @@ export default function Login({navigation}) {
     userID: '',
     password: '',
   });
-  const [showPassword, setShowPassword] = useState(false); // State to manage password visibility
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = async () => {
     const {userID, password} = form;
+    const formData = new FormData();
+    formData.append('UserId', userID);
+    formData.append('Password', password);
+    formData.append('DeviceID', '');
+    console.log('Form Data:', formData);
 
     try {
-      const response = await fetch('https://dummyjson.com/auth/login', {
+      const response = await fetch(URLActivity.LoginLICAgent, {
         method: 'POST',
+        body: formData,
         headers: {
-          'Content-Type': 'application/json',
+          Accept: 'application/json',
         },
-        body: JSON.stringify({
-          username: userID,
-          password: password,
-        }),
       });
-
       const data = await response.json();
-
-      if (response.ok) {
-        await AsyncStorage.setItem('userToken', data.accessToken);
-        await AsyncStorage.setItem('username', data.username); // Store username
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      if (data?.result[0]?.IsFound === 'True') {
+        await AsyncStorage.setItem('userToken', data?.result[0]?.UserCode);
+        await AsyncStorage.setItem('username', data?.result[0]?.Name);
+        await AsyncStorage.setItem('email', data?.result[0]?.Mail);
+        await AsyncStorage.setItem('phoneNo', data?.result[0]?.Mobile);
+        await AsyncStorage.setItem('username', data?.result[0]?.Name);
+        const userToken = data?.result[0]?.UserCode;
+        await login(userToken);
         navigation.navigate('HomeScreen');
       } else {
         Alert.alert('Error', data.message || 'Invalid username or password');
@@ -84,13 +93,14 @@ export default function Login({navigation}) {
             <View style={styles.input}>
               <Text style={styles.inputLabel}>User ID</Text>
               <TextInput
-                autoCapitalize="none"
+                autoCapitalize="characters"
                 autoCorrect={false}
                 clearButtonMode="while-editing"
                 keyboardType="email-address"
                 onChangeText={userID => setForm({...form, userID})}
                 placeholder="Enter your user ID"
                 placeholderTextColor="#6b7280"
+                maxLength={10}
                 style={styles.inputControl}
                 value={form.userID}
               />
@@ -100,20 +110,26 @@ export default function Login({navigation}) {
               <Text style={styles.inputLabel}>Password</Text>
               <View style={styles.passwordContainer}>
                 <TextInput
+                  keyboardType="number-pad"
                   autoCorrect={false}
                   clearButtonMode="while-editing"
                   onChangeText={password => setForm({...form, password})}
                   placeholder="********"
                   placeholderTextColor="#6b7280"
                   style={styles.inputControl}
+                  maxLength={10}
                   secureTextEntry={!showPassword} // Show password based on state
                   value={form.password}
                 />
-                {/* <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-                                    <Text style={styles.togglePasswordText}>
-                                        {showPassword ? 'Hide' : 'Show'} 
-                                    </Text>
-                                </TouchableOpacity> */}
+                <TouchableOpacity
+                  style={styles.eyeIcon}
+                  onPress={() => setShowPassword(!showPassword)}>
+                  <Icon
+                    name={showPassword ? 'visibility' : 'visibility-off'} // Choose icon based on showPassword state
+                    size={24}
+                    color={Colors.primary}
+                  />
+                </TouchableOpacity>
               </View>
             </View>
 
@@ -137,7 +153,6 @@ export default function Login({navigation}) {
                 textDecorationLine: 'underline',
                 fontWeight: '700',
               }}>
-              {' '}
               Sign up
             </Text>
           </TouchableOpacity>
@@ -148,15 +163,20 @@ export default function Login({navigation}) {
 }
 
 const styles = StyleSheet.create({
-  // passwordContainer: {
-  //     flexDirection: 'row',
-  //     alignItems: 'center',
-  // },
-  // togglePasswordText: {
-  //     marginLeft: 10,
-  //     color: Colors.primary, // Adjust this color as needed
-  //     fontWeight: '600',
-  // },
+  passwordContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    position: 'relative',
+  },
+  eyeIcon: {
+    position: 'absolute',
+    right: 12, // Adjust to align icon on the right side
+    padding: 4, // Add some padding for easier tapping
+  },
+  togglePasswordText: {
+    color: Colors.primary,
+    fontWeight: '600',
+  },
   container: {
     paddingVertical: 24,
     paddingHorizontal: 0,
@@ -175,7 +195,6 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: '#929292',
   },
-  /** Header */
   header: {
     alignItems: 'center',
     justifyContent: 'center',
@@ -187,7 +206,6 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     marginBottom: 20,
   },
-  /** Form */
   form: {
     marginBottom: 24,
     paddingHorizontal: 24,
@@ -217,7 +235,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     letterSpacing: 0.15,
   },
-  /** Input */
   input: {
     marginBottom: 16,
   },
@@ -238,8 +255,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#C9D3DB',
     borderStyle: 'solid',
+    flex: 1, // Ensures TextInput expands fully in row layout
   },
-  /** Button */
   btn: {
     flexDirection: 'row',
     alignItems: 'center',

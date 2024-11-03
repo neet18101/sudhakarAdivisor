@@ -2,9 +2,11 @@ import React, {useEffect, useState} from 'react';
 import {StyleSheet, Text, View, StatusBar, Image} from 'react-native';
 import {Colors} from '../../src/constants';
 import Logo from '../assets/images/logo.png';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Splash = ({navigation}) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   useEffect(() => {
     const checkLoginStatus = async () => {
       const token = await AsyncStorage.getItem('userToken');
@@ -12,13 +14,11 @@ const Splash = ({navigation}) => {
         setIsLoggedIn(true);
       }
       setIsLoading(false);
+      // navigation.replace('Onboarding');
     };
     checkLoginStatus();
+   
   }, []);
-
-  setTimeout(() => {
-    navigation.replace('Onboarding');
-  }, 3000);
   return (
     <View
       style={{

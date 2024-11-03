@@ -18,25 +18,23 @@ import FeatherIcon from 'react-native-vector-icons/Feather';
 import RadioButton from '../components/RadioButton';
 import colors from '../constants/Colors';
 import CustomPicker from '../components/CustomPicker';
-import Colors from '../constants/Colors';
 import CitiesPicker from '../components/CitiesPicker';
 import DeviceInfo from 'react-native-device-info';
-import {RegisterLICAgent} from '../utlis/URLActivity';
+import URLActivity, {RegisterLICAgent} from '../utlis/URLActivity';
 
 export default function Signup({navigation}) {
-  const [macAddress, setMacAddress] = useState('');
+  const [deviceId, setDeviceId] = useState('');
+
   useEffect(() => {
-    const fetchMacAddress = async () => {
-      const address = await DeviceInfo.getUniqueId();
-      setMacAddress(address);
-    };
-    fetchMacAddress();
+    DeviceInfo.getAndroidId().then((id) => {
+      setDeviceId(id);
+    });
   }, []);
   const [form, setForm] = useState({
     name: '',
     MobileNo: '',
     EmailId: '',
-    DeviceId: macAddress,
+    DeviceId: deviceId,
     pan: '',
     RegisTypeId: '',
     tanNumber: '',
@@ -49,7 +47,7 @@ export default function Signup({navigation}) {
     EmailId: '',
     DeviceId: '',
     pan: '',
-    // tanNumber: '',
+    tanNumber: '',
     M25_DepartmentId: '',
     RegisTypeId: '',
   });
@@ -97,10 +95,8 @@ export default function Signup({navigation}) {
       tanNumber: tanError,
       organization: organizationError,
     });
-
     return valid;
   };
-  console.log(macAddress, 'neetx');
   const getKeyboardType = value => {
     if (value.length < 5 || value.length === 9) {
       return 'default';
@@ -110,28 +106,48 @@ export default function Signup({navigation}) {
   };
 
   const handleFormSubmit = async () => {
-    const formData = {
-      name: form.name,
-      MobileNo: form.MobileNo,
-      EmailId: form.EmailId,
-      DeviceId: macAddress,
-      pan: form.pan,
-      RegisTypeId: form.RegisTypeId,
-      M25_DepartmentId: form.M25_DepartmentId,
-      M04_CityId: form.M04_CityId,
-    };
+    const formData = new FormData();
+    formData.append('Name', form.name);
+    formData.append('MobileNo', form.MobileNo);
+    formData.append('Pan', form.RegisTypeId === 3 ? form.tanNumber : form.pan);
+    formData.append('EmailId', form.EmailId);
+    formData.append('DeviceId', deviceId);
+    formData.append('M25_DepartmentId', form.M25_DepartmentId);
+    formData.append('M04_CityId', form.M04_CityId);
+    formData.append('RegisTypeId', form.RegisTypeId);
+    console.log('Form Data:', formData);
     try {
-      const response = await fetch(RegisterLICAgent, {
+     
+      const response = await fetch(URLActivity.RegisterLICAgent, {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(formData),
+        body: formData,
+        headers: {
+          Accept: 'application/json',
+        },
       });
+
       if (!response.ok) {
         throw new Error('Network response was not ok');
       }
-      const responseData = await response.json();
-      Alert.alert('Success', 'Form submitted successfully');
-      console.log('Response:', responseData);
+      const rawText = (await response.text()).trim();
+      let responseData;
+      try {
+        responseData = rawText ? JSON.parse(rawText) : {};
+      } catch (parseError) {
+        throw new Error('Failed to parse JSON response');
+      }
+      const message =
+        responseData.result && responseData.result[0]
+          ? typeof responseData.result[0]['Message '] === 'string'
+            ? responseData.result[0]['Message '].trim()
+            : 'No message available'
+          : 'No message available';
+
+      Alert.alert('Response', message);
+
+      if (responseData.result[0]?.IsFound === 'True') {
+        navigation.navigate('Login');
+      }
     } catch (error) {
       Alert.alert('Error', `Failed to submit the form: ${error.message}`);
       console.error('Error:', error);
@@ -222,7 +238,7 @@ export default function Signup({navigation}) {
               />
             </View>
 
-            {form.RegisTypeId === 'Employee(27A)' ? (
+            {form.RegisTypeId === 3 ? (
               <View style={styles.input}>
                 <Text style={styles.inputLabel}>TAN No.</Text>
                 <TextInput
