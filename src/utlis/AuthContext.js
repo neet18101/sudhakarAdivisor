@@ -14,7 +14,10 @@ export const AuthContextProvider = ({children}) => {
 
   const logout = async () => {
     await AsyncStorage.removeItem('userToken');
+    await AsyncStorage.removeItem('UserId');
+    
     setIsLoggedIn(false);
+    
   };
 
   const checkLoginStatus = async () => {

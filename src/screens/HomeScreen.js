@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import {Image, Text, View, StyleSheet, StatusBar} from 'react-native';
 import colors from '../constants/Colors';
 import Slider from '../components/HomeScreen/Slider';
@@ -19,15 +19,7 @@ const Home = ({navigation}) => {
   return (
     <>
       <View style={styles.container}>
-        {/* StatusBar Settings */}
-        <StatusBar
-          animated={true}
-          backgroundColor={colors.primary}
-          barStyle="light-content"
-          translucent={false}
-        />
-
-        <Header navigation={navigation}/>
+        <Header navigation={navigation} />
       </View>
       <Slider />
       <Fetaure navigation={navigation} />
@@ -37,7 +29,6 @@ const Home = ({navigation}) => {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: colors.primary, // Background color of the whole container
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
   },

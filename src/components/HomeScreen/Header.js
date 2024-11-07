@@ -7,11 +7,11 @@ import {
   View,
   TouchableOpacity,
 } from 'react-native';
-import colors from '../../constants/Colors';
 import avatar from '../../assets/images/avatar.png';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import {useAuth} from '../../utlis/AuthContext';
+import Colors from '../../constants/Colors';
 
 const Header = ({navigation}) => {
   const [userName, setUserName] = useState(null);
@@ -42,24 +42,22 @@ const Header = ({navigation}) => {
       routes: [{name: 'Login'}], // Navigate to the Login screen
     });
   };
-
-  // Define colors for each day
   const dayColors = [
-    colors.darkHeaderColor,         // Sunday
-    colors.green2,           // Monday
-    colors.steelBlue,        // Tuesday
-    colors.primaryAlpha,     // Wednesday
-    colors.darkGray2,        // Thursday
-    colors.purpleAlpha,      // Friday
-    colors.primary,  // Saturday
+    Colors.darkHeaderColor,         // Sunday
+    Colors.green2,           // Monday
+    Colors.steelBlue,        // Tuesday
+    Colors.primaryAlpha,     // Wednesday
+    Colors.darkGray2,        // Thursday
+    Colors.purpleAlpha,      // Friday
+    Colors.primary,  // Saturday
   ];
   const backgroundColor = dayColors[new Date().getDay()];
 
   return (
-    <View style={[styles.container, { backgroundColor }]}>
+    <View style={styles.container}>
       <StatusBar
         animated={true}
-        backgroundColor={backgroundColor}
+        backgroundColor={Colors.primary}
         barStyle="light-content"
         translucent={false}
       />
@@ -68,14 +66,14 @@ const Header = ({navigation}) => {
           <Image source={avatar} style={styles.avatar} />
           <View>
             <Text
-              style={{color: colors.white, fontSize: 12, fontWeight: '700'}}>
+              style={{color: Colors.white, fontSize: 12, fontWeight: '700'}}>
               Welcome
             </Text>
             <Text style={styles.userName}>{userName}</Text>
           </View>
         </View>
         <TouchableOpacity onPress={handleLogout}>
-          <Icon name="logout" size={24} color={colors.white} />
+          <Icon name="logout" size={24} color={Colors.white} />
         </TouchableOpacity>
       </View>
     </View>
@@ -88,6 +86,7 @@ const styles = StyleSheet.create({
     paddingTop: 25,
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
+    backgroundColor: Colors.primary,
   },
   header: {
     flexDirection: 'row',
@@ -108,7 +107,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontFamily: 'OpenSans-SemiBold',
     fontWeight: '700',
-    color: colors.white,
+    color: Colors.white,
   },
 });
 

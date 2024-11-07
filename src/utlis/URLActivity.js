@@ -1,4 +1,3 @@
-
 const URLActivity = {
   GetITRRequest: 'http://paytds.com/JsonService/GetITRRequest.aspx',
   FillQuarter: 'http://paytds.com/JsonService/FillQuarter.aspx',
@@ -35,5 +34,9 @@ const URLActivity = {
   GetLICJeevanPer: 'http://paytds.com/Greetings/GetLICJeevanPer.aspx',
   RegisterLICAgent: 'http://paytds.com/JsonService/LICAgent.aspx',
   LoginLICAgent: 'https://paytds.com/JsonService/SignUp.aspx',
-};
+
+  // new api
+  CreateTicket: 'https://paytds.com//JsonService/CreateTicket.aspx',
+  FillTicketCategory: 'https://paytds.com/JsonService/FillTicketCategory.aspx',
+};  
 export default URLActivity;

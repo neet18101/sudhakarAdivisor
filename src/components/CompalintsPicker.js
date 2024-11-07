@@ -12,45 +12,43 @@ import colors from '../constants/Colors';
 import useFetch from '../hook/useFetch';
 import URLActivity from '../utlis/URLActivity';
 
-const CompalintsPicker = ({selectedValue, onValueChange, placeholder}) => {
-  const {data, loading, error} = useFetch(URLActivity.FillDept);
+const ComplaintsPicker = ({selectedValue, onValueChange, placeholder}) => {
+  const {data, loading, error} = useFetch(URLActivity.FillTicketCategory);
+
   const [search, setSearch] = useState('');
-  const [clicked, setClicked] = useState(false); // Use this to toggle Modal
-  const [filteredData, setFilteredData] = useState(data);
+  const [clicked, setClicked] = useState(false);
+  const [selectedCategoryName, setSelectedCategoryName] = useState(''); // Add this line
   const searchRef = useRef();
+
   return (
     <View style={styles.pickerContainer}>
       <TouchableOpacity
         style={styles.pickerButton}
-        onPress={() => setClicked(true)} // Toggle modal
-      >
+        onPress={() => setClicked(true)}>
         <Text style={styles.pickerButtonText}>
-          {selectedValue === '' ? placeholder : selectedValue}
+          {selectedCategoryName === '' ? placeholder : selectedCategoryName}
         </Text>
       </TouchableOpacity>
-
-      {/* Use Modal for Dropdown */}
       {clicked && (
         <Modal
           transparent={true}
           animationType="slide"
           visible={clicked}
-          onRequestClose={() => setClicked(false)} // Close Modal on Back Button
-        >
+          onRequestClose={() => setClicked(false)}>
           <View style={styles.modalContainer}>
             <View style={styles.dropdownContainer}>
-              {/* <Text>{JSON.stringify(data)}</Text>  DepartmentID*/}
               <FlatList
                 data={data}
-                keyExtractor={item => item.DepartmentID.toString()}
+                keyExtractor={item => item.CategID.toString()}
                 renderItem={({item}) => (
                   <TouchableOpacity
                     style={styles.listItem}
                     onPress={() => {
-                      onValueChange(item.DepartmentID);
+                      setSelectedCategoryName(item.Category); // Set selected category name
+                      onValueChange(item.CategID); // Send CategID to the parent component
                       setClicked(false);
                     }}>
-                    <Text style={styles.listItemText}>{item.Department}</Text>
+                    <Text style={styles.listItemText}>{item.Category}</Text>
                   </TouchableOpacity>
                 )}
               />
@@ -131,4 +129,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default CompalintsPicker;
+export default ComplaintsPicker;

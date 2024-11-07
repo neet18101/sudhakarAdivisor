@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   View,
   Text,
@@ -9,13 +9,16 @@ import {
   Alert,
 } from 'react-native';
 import Colors from '../../constants/Colors';
-import CompalintsPicker from '../CompalintsPicker';
+import ComplaintsPicker from '../CompalintsPicker';
 import GlobalHeader from '../../common/GlobalHeader';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {
   heightPercentageToDP as hp,
   widthPercentageToDP as wp,
 } from 'react-native-responsive-screen';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import URLActivity from '../../utlis/URLActivity';
+
 export default function CreateComplaints({navigation}) {
   const [form, setForm] = useState({
     issueCategory: '',
@@ -27,35 +30,68 @@ export default function CreateComplaints({navigation}) {
     subject: '',
     description: '',
   });
-  const handleSave = () => {
-    let isValid = true;
-    let newErrors = {issueCategory: '', subject: '', description: ''};
-    if (!form.issueCategory) {
-      newErrors.issueCategory = 'Please choose an issue category';
-      isValid = false;
-    }
-    if (!form.subject) {
-      newErrors.subject = 'Subject is required';
-      isValid = false;
-    }
-    if (!form.description) {
-      newErrors.description = 'Description is required';
-      isValid = false;
-    }
-    setErrors(newErrors);
-    if (isValid) {
+  const [userId, setUserId] = useState('');
+  const [userRole, setUserRole] = useState('');
+  // Fetch user data from AsyncStorage
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const id = await AsyncStorage.getItem('id');
+        const role = await AsyncStorage.getItem('role');
+        setUserId(id || '');
+        setUserRole(role || '');
+      } catch (error) {
+        console.log('Error retrieving data from AsyncStorage:', error);
+      }
+    };
+    fetchUserData();
+  }, []);
+
+  const handleSave = async () => {
+    const formData = new FormData();
+    formData.append('ComplaintsID', '-1');
+    formData.append('Description', 'Description For Complaint'.trim());
+    formData.append('TicketTypeID', '1'); 
+    formData.append('SendByID', '4173'); 
+    formData.append('SendByRole', 'U'.trim());
+    formData.append('Subject', 'Subject of Complaint'.trim());
+    try {
+      const response = await fetch('https://paytds.com//JsonService/CreateTicket.aspx', {
+        method: 'POST',
+        body: formData,
+        headers: {
+          Accept: 'application/json',
+        },
+      });
+  
+      const result = await response.json();
+      console.log('API Response:', result);
+  
+      if (response.ok && result.result && result.result[0]?.IsFound === 'True') {
+        Alert.alert(
+          'Complaint Submitted',
+          'Your complaint has been saved successfully!'
+        );
+        setForm({ issueCategory: '', subject: '', description: '' });
+      } else {
+        const errorMessage = result.result[0]?.Message || 'Unknown error';
+        console.error('Response Error:', errorMessage);
+        Alert.alert('Error', errorMessage);
+      }
+    } catch (error) {
+      console.error('API Error:', error);
       Alert.alert(
-        'Complaint Submitted',
-        'Your complaint has been saved successfully!',
+        'Error',
+        'An error occurred while submitting your complaint. Please try again later.'
       );
-      setForm({issueCategory: '', subject: '', description: ''});
-    } else {
-      Alert.alert('Error', 'Please fill in all required fields.');
     }
   };
+  
+
   const handleCancel = () => {
     navigation.goBack();
   };
+
   return (
     <ScrollView contentContainerStyle={{flexGrow: 1}}>
       <GlobalHeader
@@ -69,11 +105,10 @@ export default function CreateComplaints({navigation}) {
       <View style={styles.container}>
         <View style={styles.inputContainer}>
           <Text style={styles.label}>Choose Issue Category*</Text>
-          <CompalintsPicker
+          <ComplaintsPicker
             selectedValue={form.issueCategory}
             onValueChange={value => setForm({...form, issueCategory: value})}
             placeholder="--Select--"
-            options={['Issue 1', 'Issue 2', 'Issue 3']}
           />
           {errors.issueCategory ? (
             <Text style={styles.errorText}>{errors.issueCategory}</Text>
@@ -122,6 +157,7 @@ export default function CreateComplaints({navigation}) {
     </ScrollView>
   );
 }
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,

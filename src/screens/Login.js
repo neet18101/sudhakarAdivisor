@@ -48,10 +48,14 @@ export default function Login({navigation}) {
       }
       if (data?.result[0]?.IsFound === 'True') {
         await AsyncStorage.setItem('userToken', data?.result[0]?.UserCode);
+        // userId
+        await AsyncStorage.setItem('id', String(data?.result[0]?.UserId));
         await AsyncStorage.setItem('username', data?.result[0]?.Name);
         await AsyncStorage.setItem('email', data?.result[0]?.Mail);
         await AsyncStorage.setItem('phoneNo', data?.result[0]?.Mobile);
         await AsyncStorage.setItem('username', data?.result[0]?.Name);
+        await AsyncStorage.setItem('role', String(data?.result[0]?.UserRole));
+
         const userToken = data?.result[0]?.UserCode;
         await login(userToken);
         navigation.navigate('HomeScreen');

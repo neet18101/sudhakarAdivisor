@@ -12,7 +12,6 @@ import {
   ScrollView,
   TouchableOpacity,
 } from 'react-native-gesture-handler';
-
 export default function IRTUplaod({navigation}) {
   const options = [
     {
@@ -26,7 +25,6 @@ export default function IRTUplaod({navigation}) {
       navigation: 'ComplaintsList',
     },
   ];
-
   return (
     <ScrollView contentContainerStyle={{flexGrow: 1}}>
       <Header navigation={navigation} />
@@ -34,7 +32,6 @@ export default function IRTUplaod({navigation}) {
         <View style={styles.titleContainer}>
           <Text style={styles.title}>Complaints</Text>
         </View>
-
         <FlatList
           data={options}
           renderItem={({item}) => (
