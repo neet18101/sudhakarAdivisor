@@ -3,7 +3,13 @@ import React from 'react';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import BottomTab from './BottomTab';
 import FormSixteenList from '../components/FormSixteen/FormSixteenList';
-import {CreateComplaints, FormPartA, Login, TDS_Document} from '../screens';
+import {
+  CreateComplaints,
+  FormPartA,
+  Login,
+  TDS_Document,
+  ComplaintsList,
+} from '../screens';
 
 const Stack = createNativeStackNavigator();
 
@@ -15,7 +21,7 @@ const AppStack = () => {
       {/* <Stack.Screen name="FormPartA" component={FormPartA} /> */}
       <Stack.Screen name="TDS_Document" component={TDS_Document} />
       <Stack.Screen name="CreateComplaints" component={CreateComplaints} />
-      
+      <Stack.Screen name="ComplaintsList" component={ComplaintsList} />
     </Stack.Navigator>
   );
 };

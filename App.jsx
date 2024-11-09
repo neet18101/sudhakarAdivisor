@@ -7,6 +7,7 @@ import AppStack from './src/navigation/AppStack';
 import Splash from './src/screens/Splash';
 import Onboarding from './src/screens/Onboarding';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Toast from 'react-native-toast-message';
 
 const Stack = createStackNavigator();
 
@@ -41,6 +42,7 @@ const MainApp = () => {
 const App = () => (
   <AuthContextProvider>
     <NavigationContainer>
+      <Toast />
       <MainApp />
     </NavigationContainer>
   </AuthContextProvider>

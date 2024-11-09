@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -18,8 +18,9 @@ import {
 } from 'react-native-responsive-screen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import URLActivity from '../../utlis/URLActivity';
+import Toast from 'react-native-toast-message';
 
-export default function CreateComplaints({navigation}) {
+export default function CreateComplaints({ navigation }) {
   const [form, setForm] = useState({
     issueCategory: '',
     subject: '',
@@ -32,7 +33,6 @@ export default function CreateComplaints({navigation}) {
   });
   const [userId, setUserId] = useState('');
   const [userRole, setUserRole] = useState('');
-  // Fetch user data from AsyncStorage
   useEffect(() => {
     const fetchUserData = async () => {
       try {
@@ -46,54 +46,44 @@ export default function CreateComplaints({navigation}) {
     };
     fetchUserData();
   }, []);
-
   const handleSave = async () => {
-    const formData = new FormData();
-    formData.append('ComplaintsID', '-1');
-    formData.append('Description', 'Description For Complaint'.trim());
-    formData.append('TicketTypeID', '1'); 
-    formData.append('SendByID', '4173'); 
-    formData.append('SendByRole', 'U'.trim());
-    formData.append('Subject', 'Subject of Complaint'.trim());
     try {
-      const response = await fetch('https://paytds.com//JsonService/CreateTicket.aspx', {
+      const formData = new FormData();
+      formData.append('ComplaintsID', '-1');
+      formData.append('Descrption', form.description);
+      formData.append('TicketTypeID', form.issueCategory);
+      formData.append('SendByID', userId);
+      formData.append('SendByRole', userRole);
+      formData.append('Subject', form.subject);
+      const requestOptions = {
         method: 'POST',
         body: formData,
-        headers: {
-          Accept: 'application/json',
-        },
-      });
-  
+        redirect: 'follow',
+      };
+      const response = await fetch(URLActivity.CreateTicket, requestOptions);
       const result = await response.json();
-      console.log('API Response:', result);
-  
-      if (response.ok && result.result && result.result[0]?.IsFound === 'True') {
-        Alert.alert(
-          'Complaint Submitted',
-          'Your complaint has been saved successfully!'
-        );
-        setForm({ issueCategory: '', subject: '', description: '' });
+      if (response.ok && result?.result?.[0]?.IsFound === 'True') {
+        Alert.alert('Success', 'Complaint submitted successfully.');
+
+        setForm({ issueCategory: null, subject: '', description: '' });
       } else {
-        const errorMessage = result.result[0]?.Message || 'Unknown error';
-        console.error('Response Error:', errorMessage);
-        Alert.alert('Error', errorMessage);
+        if (result?.result?.[0]?.IsFound === 'False') {
+          Alert.alert('Error', result?.result?.[0]?.ErrorMessage);
+        }
       }
     } catch (error) {
-      console.error('API Error:', error);
+      console.error('Request Error:', error);
       Alert.alert(
         'Error',
-        'An error occurred while submitting your complaint. Please try again later.'
+        'Failed to submit the complaint. Please try again later.',
       );
     }
   };
-  
-
   const handleCancel = () => {
     navigation.goBack();
   };
-
   return (
-    <ScrollView contentContainerStyle={{flexGrow: 1}}>
+    <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
       <GlobalHeader
         title="Create Complaints"
         leftComponent={
@@ -107,7 +97,7 @@ export default function CreateComplaints({navigation}) {
           <Text style={styles.label}>Choose Issue Category*</Text>
           <ComplaintsPicker
             selectedValue={form.issueCategory}
-            onValueChange={value => setForm({...form, issueCategory: value})}
+            onValueChange={value => setForm({ ...form, issueCategory: value })}
             placeholder="--Select--"
           />
           {errors.issueCategory ? (
@@ -120,7 +110,7 @@ export default function CreateComplaints({navigation}) {
           <TextInput
             style={styles.input}
             value={form.subject}
-            onChangeText={subject => setForm({...form, subject})}
+            onChangeText={subject => setForm({ ...form, subject })}
             placeholder="Enter Subject"
             placeholderTextColor="#6b7280"
           />
@@ -134,7 +124,7 @@ export default function CreateComplaints({navigation}) {
           <TextInput
             style={styles.textArea}
             value={form.description}
-            onChangeText={description => setForm({...form, description})}
+            onChangeText={description => setForm({ ...form, description })}
             placeholder="Enter Description"
             placeholderTextColor="#6b7280"
             multiline={true}
