@@ -38,5 +38,7 @@ const URLActivity = {
   // new api
   CreateTicket: 'https://paytds.com//JsonService/CreateTicket.aspx',
   FillTicketCategory: 'https://paytds.com/JsonService/FillTicketCategory.aspx',
-};  
+  TicketList: 'https://paytds.com//JsonService/TicketList.aspx',
+  GetTicketDetail: 'https://paytds.com/JsonService/GetTicketDetail.aspx',
+};
 export default URLActivity;

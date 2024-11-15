@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -7,15 +7,17 @@ import {
   TouchableOpacity,
   FlatList,
   TextInput,
-  Button,
   Platform,
 } from 'react-native';
-import DateTimePicker from '@react-native-community/datetimepicker';
 import Colors from '../../constants/Colors';
 import GlobalHeader from '../../common/GlobalHeader';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { heightPercentageToDP as hp, widthPercentageToDP as wp } from 'react-native-responsive-screen';
-import { Picker } from '@react-native-picker/picker';
+import ComplaintsPicker from '../CompalintsPicker';
+import StatusPicker from '../StatusPicker';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import URLActivity from '../../utlis/URLActivity';
 
 export default function ComplaintsList({ navigation }) {
   const [complaintType, setComplaintType] = useState('');
@@ -25,63 +27,106 @@ export default function ComplaintsList({ navigation }) {
   const [searchText, setSearchText] = useState('');
   const [showFromDatePicker, setShowFromDatePicker] = useState(false);
   const [showToDatePicker, setShowToDatePicker] = useState(false);
+  const [userId, setUserId] = useState('');
+  const [userRole, setUserRole] = useState('');
+  const [tableData, setTableData] = useState([]);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const id = await AsyncStorage.getItem('id');
+        const role = await AsyncStorage.getItem('role');
+        setUserId(id || '');
+        setUserRole(role || '');
+      } catch (error) {
+        console.error('Error retrieving data from AsyncStorage:', error);
+      }
+    };
+    fetchUserData();
+  }, []);
+
   const handleDateChange = (event, selectedDate, setDate, setShowPicker) => {
-    setShowPicker(false); // Close the date picker
+    setShowPicker(false);
     if (selectedDate) {
-      const formattedDate = selectedDate.toLocaleDateString();
-      setDate(formattedDate); // Set the formatted date as a string
+      const day = String(selectedDate.getDate()).padStart(2, '0');
+      const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
+      const year = selectedDate.getFullYear();
+      setDate(`${day}/${month}/${year}`);
     }
   };
-  const tableData = [
-    { id: '1', ticketNumber: 'CMP00000006', name: 'Yogendra Rai', mobile: '1234567890', createdOn: '07/11/2024 22:15:16', status: 'Close' },
-    { id: '2', ticketNumber: 'CMP00000011', name: 'Yogendra Rai', mobile: '1234567890', createdOn: '07/11/2024 22:55:04', status: 'Open' },
-  ];
 
-  const renderRow = ({ item, index }) => (
-    <View style={[styles.row, index % 2 === 0 ? styles.evenRow : styles.oddRow]}>
-      <Text style={styles.cell}>{item.id}</Text>
-      <Text style={[styles.cell, styles.linkText]}>{item.ticketNumber}</Text>
-      <Text style={styles.cell}>{item.name}</Text>
-      <Text style={styles.cell}>{item.mobile}</Text>
-      <Text style={styles.cell}>{item.createdOn}</Text>
-      <Text style={styles.cell}>{item.status}</Text>
-    </View>
-  );
+  const onSubmit = async () => {
+    try {
+      const formData = new FormData();
+      formData.append('CustID', userId);
+      formData.append('RoleCode', userRole);
+      formData.append('TicketTypeID', complaintType);
+      formData.append('FromDate', fromDate);
+      formData.append('ToDate', toDate);
+      const response = await fetch(URLActivity?.TicketList, {
+        method: 'POST',
+        body: formData,
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      const result = await response.json();
+      if (result && result.result) {
+        setTableData(result.result);
+      } else {
+        console.error('Unexpected response format');
+        setTableData([]);
+      }
+    } catch (error) {
+      console.error('An error occurred while fetching data:', error);
+    }
+  };
+
+  const renderRow = ({ item, index }) => {
+    const createdDate = item.CreatedOn.split(' ')[0];
+    return (
+      <View style={[styles.row, index % 2 === 0 ? styles.evenRow : styles.oddRow]}>
+        <Text style={styles.cell}>{index + 1}</Text>
+        <TouchableOpacity onPress={() => navigation.navigate('ComplaintsChat', { TicketID: item.TicketNumber })}>
+          <Text style={[styles.cell, styles.linkText]}>{item.TicketNumber}</Text>
+        </TouchableOpacity>
+        <Text style={styles.cell}>{item.CustName}</Text>
+        <Text style={styles.cell}>{createdDate}</Text>
+        <Text style={[
+          styles.cell,
+          { color: item.Status1 === 'Close' ? 'red' : item.Status1 === 'Open' ? 'green' : 'black' }
+        ]}
+        >{item.Status1}</Text>
+      </View>
+    );
+  };
 
   return (
     <View style={styles.mainContainer}>
-      <GlobalHeader
-        title="Complaints List"
+      <GlobalHeader title="Complaints List"
         leftComponent={
           <TouchableOpacity onPress={() => navigation.goBack()}>
             <Icon name="arrow-back" size={wp(6)} color={Colors.white} />
           </TouchableOpacity>
         }
       />
-
       <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
         <View style={styles.filterContainer}>
           <Text style={styles.label}>Complaint Type</Text>
-          <Picker
+          <ComplaintsPicker
+            placeholder="Select Complaint Type"
             selectedValue={complaintType}
-            onValueChange={(itemValue) => setComplaintType(itemValue)}
-            style={styles.picker}
-          >
-            <Picker.Item label="--Select--" value="" color='#000' />
-          </Picker>
+            onValueChange={setComplaintType}
+          />
 
           <Text style={styles.label}>Status</Text>
-          <Picker
-            selectedValue={status}
-            onValueChange={(itemValue) => setStatus(itemValue)}
-            style={styles.picker}
-          >
-            <Picker.Item label="-- All --" value="" />
-          </Picker>
+          <StatusPicker placeholder="Select Status" selectedValue={status} onValueChange={setStatus} />
 
           <Text style={styles.label}>From Date</Text>
           <TouchableOpacity onPress={() => setShowFromDatePicker(true)} style={styles.input}>
-            <Text style={{ color: fromDate ? '#000' : '#888' }}>{fromDate || 'Select From Date'}</Text>
+            <Text style={{ color: fromDate ? '#000' : '#888', fontWeight: fromDate ? 'bold' : 'normal' }}>
+              {fromDate || 'Select From Date'}
+            </Text>
           </TouchableOpacity>
           {showFromDatePicker && (
             <DateTimePicker
@@ -94,7 +139,9 @@ export default function ComplaintsList({ navigation }) {
 
           <Text style={styles.label}>To Date</Text>
           <TouchableOpacity onPress={() => setShowToDatePicker(true)} style={styles.input}>
-            <Text style={{ color: toDate ? '#000' : '#888' }}>{toDate || 'Select To Date'}</Text>
+            <Text style={{ color: toDate ? '#000' : '#888', fontWeight: toDate ? 'bold' : 'normal' }}>
+              {toDate || 'Select To Date'}
+            </Text>
           </TouchableOpacity>
           {showToDatePicker && (
             <DateTimePicker
@@ -113,38 +160,33 @@ export default function ComplaintsList({ navigation }) {
             value={searchText}
             onChangeText={setSearchText}
           />
+
           <View style={styles.buttonContainer}>
-            <View style={styles.buttonWrapper}>
-              <Button title="Search" color="#FFA726" onPress={() => { /* Handle search */ }} />
-            </View>
-            <View style={styles.buttonWrapper}>
-              <Button title="Reset" color="#F44336" onPress={() => { /* Handle reset */ }} />
-            </View>
+            <TouchableOpacity style={styles.saveButton} onPress={onSubmit}>
+              <Text style={styles.buttonText}>Submit</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.cancelButton} onPress={() => setTableData([])}>
+              <Text style={styles.buttonText}>Cancel</Text>
+            </TouchableOpacity>
           </View>
-
         </View>
 
-
-        <View style={styles.container}>
-          <ScrollView horizontal>
-            <View>
-              <View style={styles.headerRow}>
-                <Text style={styles.headerCell}>SrNo</Text>
-                <Text style={styles.headerCell}>Ticket Number</Text>
-                <Text style={styles.headerCell}>Name</Text>
-                <Text style={styles.headerCell}>Mobile</Text>
-                <Text style={styles.headerCell}>Created On</Text>
-                <Text style={styles.headerCell}>Status</Text>
+        <ScrollView horizontal style={styles.tableContainer}>
+          <FlatList
+            data={tableData}
+            keyExtractor={(item, index) => index.toString()}
+            renderItem={renderRow}
+            ListHeaderComponent={() => (
+              <View style={[styles.row, styles.headerRow]}>
+                <Text style={[styles.cell, styles.headerText]}>Sr No</Text>
+                <Text style={[styles.cell, styles.headerText]}>Ticket No</Text>
+                <Text style={[styles.cell, styles.headerText]}>Name</Text>
+                <Text style={[styles.cell, styles.headerText]}>Created On</Text>
+                <Text style={[styles.cell, styles.headerText]}>Status</Text>
               </View>
-              <FlatList
-                data={tableData}
-                renderItem={renderRow}
-                keyExtractor={(item) => item.id}
-                contentContainerStyle={styles.tableBody}
-              />
-            </View>
-          </ScrollView>
-        </View>
+            )}
+          />
+        </ScrollView>
       </ScrollView>
     </View>
   );
@@ -156,59 +198,90 @@ const styles = StyleSheet.create({
     backgroundColor: '#f9f9f9',
   },
   filterContainer: {
-    padding: wp(2),
+    padding: wp(3),
     backgroundColor: '#fff',
     borderBottomWidth: 1,
     borderBottomColor: '#ccc',
     marginBottom: hp(2),
-    
   },
   label: {
-    fontSize: wp(4),
+    fontSize: wp(4.2),
     color: '#333',
     marginBottom: hp(0.5),
     marginTop: hp(1),
-  },
-  picker: {
-    height: hp(6),
-    backgroundColor: '#f9f9f9',
-    color: '#000',
-    marginBottom: hp(1),
-    borderColor: '#000',
-    borderWidth: 1,
-    borderRadius: 4,
+    fontWeight: 'bold',
   },
   input: {
-    height: hp(5),
+    height: hp(6),
     borderColor: '#ccc',
+    color: '#000',
     borderWidth: 1,
-    borderRadius: 4,
+    borderRadius: 5,
     paddingHorizontal: wp(2),
     justifyContent: 'center',
     marginBottom: hp(1),
-    backgroundColor: '#f9f9f9',
-  },
-  headerRow: {
-    flexDirection: 'row',
-    backgroundColor: '#007bff',
-    paddingVertical: hp(1),
-    borderTopLeftRadius: wp(1),
-    borderTopRightRadius: wp(1),
-  },
-  headerCell: {
-    width: wp(20),
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: wp(3.5),
-    textAlign: 'center',
+    fontWeight: '600',
   },
   buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: hp(2),
+    marginTop: hp(3),
   },
-  buttonWrapper: {
+  saveButton: {
+    backgroundColor: Colors.primary,
+    paddingVertical: hp(1.5),
+    paddingHorizontal: wp(6),
+    borderRadius: wp(2),
     flex: 1,
-    marginHorizontal: wp(1),
+    marginRight: wp(2),
+  },
+  cancelButton: {
+    backgroundColor: Colors.red,
+    paddingVertical: hp(1.5),
+    paddingHorizontal: wp(6),
+    borderRadius: wp(2),
+    flex: 1,
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: wp(4),
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  tableContainer: {
+    paddingHorizontal: wp(3),
+  },
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: hp(1),
+    borderBottomWidth: 1,
+    borderBottomColor: '#ddd',
+  },
+  headerRow: {
+    backgroundColor: Colors.primary,
+  },
+  evenRow: {
+    backgroundColor: '#e0ffe0',
+  },
+  oddRow: {
+    backgroundColor: '#ffffff',
+  },
+  cell: {
+    minWidth: wp(18),
+    paddingHorizontal: wp(1),
+    textAlign: 'center',
+    fontSize: wp(3.5),
+    color: '#333',
+  },
+  headerText: {
+    fontWeight: 'bold',
+    fontSize: wp(3.7),
+    color: Colors.white,
+  },
+  linkText: {
+    color: Colors.primary,
+    textDecorationLine: 'underline',
   },
 });

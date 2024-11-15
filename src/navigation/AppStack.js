@@ -9,6 +9,7 @@ import {
   Login,
   TDS_Document,
   ComplaintsList,
+  ComplaintsChat,
 } from '../screens';
 
 const Stack = createNativeStackNavigator();
@@ -22,6 +23,7 @@ const AppStack = () => {
       <Stack.Screen name="TDS_Document" component={TDS_Document} />
       <Stack.Screen name="CreateComplaints" component={CreateComplaints} />
       <Stack.Screen name="ComplaintsList" component={ComplaintsList} />
+      <Stack.Screen name="ComplaintsChat" component={ComplaintsChat} />
     </Stack.Navigator>
   );
 };

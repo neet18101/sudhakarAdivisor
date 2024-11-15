@@ -1,7 +1,7 @@
 import {View, Text} from 'react-native';
 import React from 'react';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
-import {HomeScreen, ITRUpload, Profile} from '../screens';
+import {HomeScreen, ITRUpload, Profile, PlanScreen} from '../screens';
 import {Colors} from '../constants';
 import Icon from 'react-native-vector-icons/Ionicons';
 import * as Animatable from 'react-native-animatable';
@@ -62,17 +62,34 @@ const BottomTab = () => {
         options={{
           tabBarIcon: ({focused}) => (
             <Animatable.View
-              animation={focused ? 'bounceIn' : 'fadeIn'}
+              animation={focused ? 'bounceIn' : 'fadeIn'}                      
               duration={500}>
               <Icon
                 name="alert-circle-outline"
+                size={22}
+                color={focused ? Colors.primary : 'grey'}
+              />                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              
+            </Animatable.View>
+          ),
+          headerShown: false,
+        }}
+      />
+       <Tab.Screen
+        name="Plan"
+        component={PlanScreen}
+        options={{
+          tabBarIcon: ({focused}) => (
+            <Animatable.View
+              animation={focused ? 'bounceIn' : 'fadeIn'}
+              duration={500}>
+              <Icon
+                name="wallet-outline"
                 size={22}
                 color={focused ? Colors.primary : 'grey'}
               />
             </Animatable.View>
           ),
           headerShown: false,
-        
         }}
       />
       <Tab.Screen
@@ -92,6 +109,7 @@ const BottomTab = () => {
           ),
         }}
       />
+     
     </Tab.Navigator>
   );
 };
