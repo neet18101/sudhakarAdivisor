@@ -28,13 +28,12 @@ const MainApp = () => {
 
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      {isFirstLaunch ? (
-        <Stack.Screen name="Onboarding" component={Onboarding} />
-      ) : isLoggedIn ? (
-        <Stack.Screen name="AppStack" component={AppStack} />
-      ) : (
-        <Stack.Screen name="AuthStack" component={AuthStack} />
-      )}
+      {
+        isLoggedIn ? (
+          <Stack.Screen name="AppStack" component={AppStack} />
+        ) : (
+          <Stack.Screen name="AuthStack" component={AuthStack} />
+        )}
     </Stack.Navigator>
   );
 };

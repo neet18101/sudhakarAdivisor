@@ -40,5 +40,13 @@ const URLActivity = {
   FillTicketCategory: 'https://paytds.com/JsonService/FillTicketCategory.aspx',
   TicketList: 'https://paytds.com//JsonService/TicketList.aspx',
   GetTicketDetail: 'https://paytds.com/JsonService/GetTicketDetail.aspx',
+  GetPlanCategory:'https://paytds.com/JsonService/GetPlanCategory.aspx',
+  GetPlan:'https://paytds.com/JsonService/GetPlan.aspx',
+  GetPlanDetail:'https://paytds.com/JsonService/PlanDetail.aspx',
+  BuyMemberPlan:'https://paytds.com/JsonService/BuyMemberPlan.aspx',
+  TanDepartmentList:'https://paytds.com/JsonService/GetTanDepartmentList.aspx',
+  FillYear:'https://paytds.com//JsonService/FillYear.aspx',
+  FillQuarter:"https://paytds.com/JsonService/FillQuarter.aspx",
+  Download27AFile:'https://paytds.com/JsonService/Download27AFile.aspx'
 };
 export default URLActivity;

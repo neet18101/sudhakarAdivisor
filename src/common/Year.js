@@ -12,14 +12,13 @@ import colors from '../constants/Colors';
 import useFetch from '../hook/useFetch';
 import URLActivity from '../utlis/URLActivity';
 
-const ComplaintsPicker = ({selectedValue, onValueChange, placeholder}) => {
-  const {data, loading, error} = useFetch(URLActivity.FillTicketCategory);
-
+const CustomYearPicker = ({selectedValue, onValueChange, placeholder}) => {
+  const {data, loading, error} = useFetch(URLActivity.FillYear);
   const [search, setSearch] = useState('');
   const [clicked, setClicked] = useState(false);
-  const [selectedCategoryName, setSelectedCategoryName] = useState(''); // Add this line
+  const [selectedCategoryName, setSelectedCategoryName] = useState('');
+  const [filteredData, setFilteredData] = useState(data);
   const searchRef = useRef();
-
   return (
     <View style={styles.pickerContainer}>
       <TouchableOpacity
@@ -39,16 +38,16 @@ const ComplaintsPicker = ({selectedValue, onValueChange, placeholder}) => {
             <View style={styles.dropdownContainer}>
               <FlatList
                 data={data}
-                keyExtractor={item => item.CategID.toString()}
+                keyExtractor={item => item.Yearid.toString()}
                 renderItem={({item}) => (
                   <TouchableOpacity
                     style={styles.listItem}
                     onPress={() => {
-                      setSelectedCategoryName(item.Category);
-                      onValueChange(item.CategID);
+                      setSelectedCategoryName(item.Year);
+                      onValueChange(item.Yearid);
                       setClicked(false);
                     }}>
-                    <Text style={styles.listItemText}>{item.Category}</Text>
+                    <Text style={styles.listItemText}>{item.Year}</Text>
                   </TouchableOpacity>
                 )}
               />
@@ -129,4 +128,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ComplaintsPicker;
+export default CustomYearPicker;

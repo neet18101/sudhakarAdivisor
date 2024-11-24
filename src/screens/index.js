@@ -11,3 +11,6 @@ export {default as CreateComplaints} from '../components/Complaints/CreateCompla
 export {default as ComplaintsList} from '../components/Complaints/ComplaintsList';
 export {default as ComplaintsChat} from './CompalaintsChatScreen';
 export {default as PlanScreen} from './PlanScreen';
+export {default as BuyPlan} from '../components/PlanScreen/BuyPlan';
+export {default as MemeberPlanReport} from '../components/PlanScreen/MemeberPlanReport';
+export {default as TDSForm} from '../components/TSD_Document/TDSForm';  

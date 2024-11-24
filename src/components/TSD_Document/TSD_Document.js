@@ -7,40 +7,37 @@ import colors from '../../constants/Colors';
 import Icon from 'react-native-vector-icons/Ionicons';
 import GlobalHeader from '../../common/GlobalHeader';
 import {useNavigation} from '@react-navigation/native';
-import { Text, View } from 'react-native-animatable';
-import { FlatList } from 'react-native-gesture-handler';
-
+import {Text, View} from 'react-native-animatable';
+import {FlatList} from 'react-native-gesture-handler';
 const TSD_Document = () => {
   const navigation = useNavigation();
-
   const options = [
     {
-      icon: 'folder-open-outline', // Changed icon name
+      icon: 'folder-open-outline', 
       name: 'TDS 27A Report',
       navigation: 'TDSForm',
     },
     {
-      icon: 'file-tray-full-outline', // Changed icon name
+      icon: 'file-tray-full-outline',
       name: 'Challan Receipt Report',
       navigation: 'ChallanForm',
     },
     {
-      icon: 'cloud-upload', // Changed icon name
+      icon: 'cloud-upload', 
       name: 'Tax Audit Report',
       navigation: 'TaxAuditForm',
     },
     {
-      icon: 'cloud-download', // Changed icon name
+      icon: 'cloud-download',
       name: 'Acknowledgement Receipt Report',
       navigation: 'AcknowledgementReceiptForm',
     },
     {
-      icon: 'receipt', // Changed icon name
+      icon: 'receipt',
       name: 'Acknowledgement Updated Receipt Report',
       navigation: 'AcknowledgementUpdateReceiptForm',
     },
   ];
-
   return (
     <>
       <GlobalHeader
@@ -57,8 +54,7 @@ const TSD_Document = () => {
           renderItem={({item}) => (
             <TouchableOpacity
               style={styles.optionButton}
-              onPress={() => navigation.navigate(item.navigation)}
-            >
+              onPress={() => navigation.navigate(item.navigation)}>
               <Icon
                 name={item.icon}
                 size={wp(10)}
@@ -101,7 +97,7 @@ const styles = StyleSheet.create({
     width: wp(42),
     marginBottom: hp(2),
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: hp(0.3) },
+    shadowOffset: {width: 0, height: hp(0.3)},
     shadowOpacity: 0.3,
     shadowRadius: wp(2),
     elevation: 5,

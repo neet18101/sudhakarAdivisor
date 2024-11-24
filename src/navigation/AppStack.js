@@ -10,7 +10,10 @@ import {
   TDS_Document,
   ComplaintsList,
   ComplaintsChat,
+  BuyPlan,
+  TDSForm
 } from '../screens';
+import { MemeberPlanReport } from '../components/PlanScreen/MemeberPlanReport';
 
 const Stack = createNativeStackNavigator();
 
@@ -24,6 +27,9 @@ const AppStack = () => {
       <Stack.Screen name="CreateComplaints" component={CreateComplaints} />
       <Stack.Screen name="ComplaintsList" component={ComplaintsList} />
       <Stack.Screen name="ComplaintsChat" component={ComplaintsChat} />
+      <Stack.Screen name="BuyPlan" component={BuyPlan} />
+      <Stack.Screen name="MemeberPlanReport" component={MemeberPlanReport}/>
+      <Stack.Screen name="TDSForm" component={TDSForm}/>
     </Stack.Navigator>
   );
 };

@@ -134,7 +134,6 @@ export default function CreateComplaints({ navigation }) {
             <Text style={styles.errorText}>{errors.description}</Text>
           ) : null}
         </View>
-
         <View style={styles.buttonContainer}>
           <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
             <Text style={styles.buttonText}>Save</Text>

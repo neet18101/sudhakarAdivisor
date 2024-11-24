@@ -14,9 +14,8 @@ import Buttons from '../components/Buttons';
 
 const Onboarding = ({navigation}) => {
   const handleFinishOnboarding = async () => {
-    try {
-      await AsyncStorage.setItem('hasOnboarded', true);
-      navigation.navigate('AuthStack');
+    try { 
+      navigation.navigate('Login');
     } catch (error) {
       Alert.alert('Error', 'Failed to complete onboarding. Try again.');
       console.error('AsyncStorage error: ', error);
