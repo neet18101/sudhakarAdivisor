@@ -71,7 +71,9 @@ const FormSixteenList = () => {
         <FlatList
           data={options}
           renderItem={({item}) => (
-            <TouchableOpacity style={styles.optionButton}>
+            <TouchableOpacity
+              style={styles.optionButton}
+              onPress={() => navigation.navigate(item.navigation)}>
               <Icon
                 name={item.icon}
                 size={wp(10)}

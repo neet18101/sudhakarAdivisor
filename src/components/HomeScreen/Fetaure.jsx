@@ -11,7 +11,7 @@ export default function Feature({ navigation }) {
 
                 {/* Start E-Filing */}
                 <View style={[styles.listCategory, { backgroundColor: '#a7f3d0' }]}>
-                    <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
+                    <TouchableOpacity>
                         <View style={styles.listOption}>
                             <Image source={require('../../assets/images/filling.png')} style={styles.icon} />
                             <Text style={styles.listText}>Start E-Filing</Text>

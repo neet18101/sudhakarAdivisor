@@ -13,4 +13,10 @@ export {default as ComplaintsChat} from './CompalaintsChatScreen';
 export {default as PlanScreen} from './PlanScreen';
 export {default as BuyPlan} from '../components/PlanScreen/BuyPlan';
 export {default as MemeberPlanReport} from '../components/PlanScreen/MemeberPlanReport';
-export {default as TDSForm} from '../components/TSD_Document/TDSForm';  
+export {default as TDSForm} from '../components/TSD_Document/TDSForm'; 
+export {default as ChallanReport}  from '../components/TSD_Document/ChallanReport.jsx' ;
+export {default as  TaxAuditForm} from '../components/TSD_Document/TaxAuditForm';
+export {default as AcknowledgementReceiptForm} from '../components/TSD_Document/AcknowledgementReceiptForm';
+export {default as AcknowledgementUpdateReceiptForm} from '../components/TSD_Document/AcknowledgementUpdateReceiptForm';
+export {default as FormPartB} from '../components/FormSixteen/FormPartB';
+

@@ -12,8 +12,8 @@ import colors from '../constants/Colors';
 import useFetch from '../hook/useFetch';
 import URLActivity from '../utlis/URLActivity';
 
-const CustomPicker = ({selectedValue, onValueChange, placeholder}) => {
-  const {data, loading, error} = useFetch(URLActivity.FillDept);
+const CustomMonthPicker = ({selectedValue, onValueChange, placeholder}) => {
+  const {data, loading, error} = useFetch(URLActivity.FillMonth);
   const [search, setSearch] = useState('');
   const [clicked, setClicked] = useState(false);
   const [selectedCategoryName, setSelectedCategoryName] = useState('');
@@ -23,8 +23,7 @@ const CustomPicker = ({selectedValue, onValueChange, placeholder}) => {
     <View style={styles.pickerContainer}>
       <TouchableOpacity
         style={styles.pickerButton}
-        onPress={() => setClicked(true)} // Toggle modal
-      >
+        onPress={() => setClicked(true)}>
         <Text style={styles.pickerButtonText}>
           {selectedCategoryName === '' ? placeholder : selectedCategoryName}
         </Text>
@@ -34,22 +33,21 @@ const CustomPicker = ({selectedValue, onValueChange, placeholder}) => {
           transparent={true}
           animationType="slide"
           visible={clicked}
-          onRequestClose={() => setClicked(false)}
-        >
+          onRequestClose={() => setClicked(false)}>
           <View style={styles.modalContainer}>
             <View style={styles.dropdownContainer}>
               <FlatList
                 data={data}
-                keyExtractor={item => item.DepartmentID.toString()}
+                keyExtractor={item => item.MonthId.toString()}
                 renderItem={({item}) => (
                   <TouchableOpacity
                     style={styles.listItem}
                     onPress={() => {
-                      setSelectedCategoryName(item.Department);
-                      onValueChange(item.DepartmentID);
+                      setSelectedCategoryName(item.Month);
+                      onValueChange(item.MonthId);
                       setClicked(false);
                     }}>
-                    <Text style={styles.listItemText}>{item.Department}</Text>
+                    <Text style={styles.listItemText}>{item.Month}</Text>
                   </TouchableOpacity>
                 )}
               />
@@ -130,4 +128,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default CustomPicker;
+export default CustomMonthPicker;

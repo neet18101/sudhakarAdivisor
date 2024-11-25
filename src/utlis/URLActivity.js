@@ -40,13 +40,23 @@ const URLActivity = {
   FillTicketCategory: 'https://paytds.com/JsonService/FillTicketCategory.aspx',
   TicketList: 'https://paytds.com//JsonService/TicketList.aspx',
   GetTicketDetail: 'https://paytds.com/JsonService/GetTicketDetail.aspx',
-  GetPlanCategory:'https://paytds.com/JsonService/GetPlanCategory.aspx',
-  GetPlan:'https://paytds.com/JsonService/GetPlan.aspx',
-  GetPlanDetail:'https://paytds.com/JsonService/PlanDetail.aspx',
-  BuyMemberPlan:'https://paytds.com/JsonService/BuyMemberPlan.aspx',
-  TanDepartmentList:'https://paytds.com/JsonService/GetTanDepartmentList.aspx',
-  FillYear:'https://paytds.com//JsonService/FillYear.aspx',
-  FillQuarter:"https://paytds.com/JsonService/FillQuarter.aspx",
-  Download27AFile:'https://paytds.com/JsonService/Download27AFile.aspx'
+  GetPlanCategory: 'https://paytds.com/JsonService/GetPlanCategory.aspx',
+  GetPlan: 'https://paytds.com/JsonService/GetPlan.aspx',
+  GetPlanDetail: 'https://paytds.com/JsonService/PlanDetail.aspx',
+  BuyMemberPlan: 'https://paytds.com/JsonService/BuyMemberPlan.aspx',
+  TanDepartmentList: 'https://paytds.com/JsonService/GetTanDepartmentList.aspx',
+  FillYear: 'https://paytds.com//JsonService/FillYear.aspx',
+  FillQuarter: 'https://paytds.com/JsonService/FillQuarter.aspx',
+  Download27AFile: 'https://paytds.com/JsonService/Download27AFile.aspx',
+  FillMonth: 'https://paytds.com/JsonService/FillMonth.aspx',
+  DownloadChallanFile:
+    'https://paytds.com//JsonService/DownloadTDSChallan.aspx',
+  DownloadTaxAuditFile:
+    'https://paytds.com/JsonService/DownloadTaxAuditFile.aspx',
+  AcknowledgementReceiptForm:
+    'https://paytds.com/JsonService/DownloadAcknowledgementFile.aspx',
+  AcknowledgementUpdateReceiptForm:
+    'https://paytds.com/JsonService/DownloadAcknowledgementUpdatedFile.aspx',
+  PartA_PartBForm16: 'http://paytds.com/jsonService/PartA_PartBForm16.aspx',
 };
 export default URLActivity;

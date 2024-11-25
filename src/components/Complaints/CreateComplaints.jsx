@@ -64,11 +64,10 @@ export default function CreateComplaints({ navigation }) {
       const result = await response.json();
       if (response.ok && result?.result?.[0]?.IsFound === 'True') {
         Alert.alert('Success', 'Complaint submitted successfully.');
-
         setForm({ issueCategory: null, subject: '', description: '' });
       } else {
         if (result?.result?.[0]?.IsFound === 'False') {
-          Alert.alert('Error', result?.result?.[0]?.ErrorMessage);
+          Alert.alert('Error', result?.result?.[0]?.Message);
         }
       }
     } catch (error) {
@@ -118,7 +117,6 @@ export default function CreateComplaints({ navigation }) {
             <Text style={styles.errorText}>{errors.subject}</Text>
           ) : null}
         </View>
-
         <View style={styles.inputContainer}>
           <Text style={styles.label}>General Description*</Text>
           <TextInput

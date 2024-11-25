@@ -56,7 +56,6 @@ const Home = ({navigation}) => {
         requestOptions,
       );
       const result = await response.json();
-      // console.log(result);
 
       if (result.result && result.result.length > 0) {
         await AsyncStorage.setItem(
