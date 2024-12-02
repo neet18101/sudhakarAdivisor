@@ -1,6 +1,6 @@
 import { Text, View } from "react-native-animatable";
 import GlobalHeader from "../../common/GlobalHeader";
-import { Alert, StyleSheet, TouchableOpacity } from "react-native";
+import { ActivityIndicator, Alert, StyleSheet, TouchableOpacity } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import {
     heightPercentageToDP as hp,
@@ -8,11 +8,10 @@ import {
 } from 'react-native-responsive-screen';
 import Icon from 'react-native-vector-icons/Ionicons';
 import GlobalDepartmentByUserPhoneNumber from "../../common/GlobalDepartmentByUserPhoneNumber";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import CustomYearPicker from "../../common/Year";
 import CustomQuartorPicker from "../../common/Quarter";
 import URLActivity from "../../utlis/URLActivity";
-import DataTable from "../DataTable";
 import AReportDownload from "../../common/DataTable/AReportDownload";
 export default function AcknowledgementReceiptForm({ navigation }) {
     const [form, setForm] = useState({
@@ -21,7 +20,9 @@ export default function AcknowledgementReceiptForm({ navigation }) {
         QuarterId: ""
     });
     const [download27Afile, setDownload27Afile] = useState(null);
+    const [isLoading, setIsLoading] = useState(false);
     const handleSearch = async () => {
+        setIsLoading(true);
         try {
             const formdata = new FormData();
             formdata.append("DepartmentTANId", form.DepartmentTANId);
@@ -35,6 +36,7 @@ export default function AcknowledgementReceiptForm({ navigation }) {
             };
             const response = await fetch(URLActivity?.AcknowledgementReceiptForm, requestOptions);
             const result = await response.json();
+            setIsLoading(false);
             if (result?.result?.[0]?.IsFound === "True") {
                 setDownload27Afile(result.result);
             } else {
@@ -46,7 +48,37 @@ export default function AcknowledgementReceiptForm({ navigation }) {
             Alert.alert("Error", "Failed to fetch data. Please try again later.");
         }
     };
-    console.log(form);
+    useEffect(() => {
+        const fetchAknowledgementFile = async () => {
+            setIsLoading(true);
+            try {
+                const formdata = new FormData();
+                formdata.append("DepartmentTANId", form.DepartmentTANId);
+                formdata.append("YearId", "-1");
+                formdata.append("QuarterId","-1");
+
+                const requestOptions = {
+                    method: "POST",
+                    body: formdata,
+                    redirect: "follow",
+                };
+                const response = await fetch(URLActivity?.AcknowledgementReceiptForm, requestOptions);
+                const result = await response.json();
+                setIsLoading(false);
+                if (result?.result?.[0]?.IsFound === "True") {
+                    setDownload27Afile(result.result);
+                } else {
+                    console.log("No Data Found:", result?.result?.[0]?.Message);
+                    setDownload27Afile([]);
+                }
+            } catch (error) {
+                console.error("Error during API call:", error);
+                Alert.alert("Error", "Failed to fetch data. Please try again later.");
+            }
+        };
+        fetchAknowledgementFile();
+    }, [form.DepartmentTANId])
+
     return (
         <View style={{ flex: 1 }}>
             <View style={styles.stickyHeader}>
@@ -98,12 +130,9 @@ export default function AcknowledgementReceiptForm({ navigation }) {
                         <TouchableOpacity style={styles.saveButton} onPress={handleSearch}>
                             <Text style={styles.buttonText}>Search</Text>
                         </TouchableOpacity>
-                        {/* <TouchableOpacity style={styles.cancelButton}>
-                            <Text style={styles.buttonText}>Cancel</Text>
-                        </TouchableOpacity> */}
                     </View>
                 </View>
-                {
+                {isLoading ? <ActivityIndicator size="large" color={Colors.primary} /> :
                     download27Afile && download27Afile.length > 0 ? (
                         <AReportDownload
                             headers={['Sr. No', 'Name', 'Year', 'Action']}
@@ -111,7 +140,7 @@ export default function AcknowledgementReceiptForm({ navigation }) {
                                 srNo: index + 1,
                                 DepartmentName: item.FileName,
                                 year: item.Year,
-                                downloadUrl: item.Path,
+                                downloadUrl: item.OriginalPath,
                             }))}
                             actionText="Download"
                         />
@@ -123,6 +152,7 @@ export default function AcknowledgementReceiptForm({ navigation }) {
                         </View>
                     )
                 }
+
             </ScrollView>
 
         </View>

@@ -1,6 +1,6 @@
 import { Text, View } from "react-native-animatable";
 import GlobalHeader from "../../common/GlobalHeader";
-import { Alert, StyleSheet, TouchableOpacity } from "react-native";
+import { ActivityIndicator, Alert, StyleSheet, TouchableOpacity } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import {
     heightPercentageToDP as hp,
@@ -8,7 +8,7 @@ import {
 } from 'react-native-responsive-screen';
 import Icon from 'react-native-vector-icons/Ionicons';
 import GlobalDepartmentByUserPhoneNumber from "../../common/GlobalDepartmentByUserPhoneNumber";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import CustomYearPicker from "../../common/Year";
 import CustomQuartorPicker from "../../common/Quarter";
 import URLActivity from "../../utlis/URLActivity";
@@ -21,7 +21,9 @@ export default function TDSForm({ navigation }) {
         QuarterId: ""
     });
     const [download27Afile, setDownload27Afile] = useState(null);
+    const [isLoading, setIsLoading] = useState(false);
     const handleSearch = async () => {
+        setIsLoading(true);
         try {
             const formdata = new FormData();
             formdata.append("DepartmentTANId", form.DepartmentTANId);
@@ -35,6 +37,7 @@ export default function TDSForm({ navigation }) {
             };
             const response = await fetch(URLActivity?.Download27AFile, requestOptions);
             const result = await response.json();
+            setIsLoading(false);
             if (result?.result?.[0]?.IsFound === "True") {
                 setDownload27Afile(result.result);
             } else {
@@ -46,7 +49,41 @@ export default function TDSForm({ navigation }) {
             Alert.alert("Error", "Failed to fetch data. Please try again later.");
         }
     };
-    console.log(form);
+    useEffect(() => {
+        const fetch27AFile = async () => {
+            setIsLoading(true);
+            try {
+                const formdata = new FormData();
+                formdata.append("DepartmentTANId", form.DepartmentTANId);
+                formdata.append("YearId", "-1");
+                formdata.append("QuarterId", "-1");
+
+                const requestOptions = {
+                    method: "POST",
+                    body: formdata,
+                    redirect: "follow",
+                };
+
+                const response = await fetch(URLActivity?.Download27AFile, requestOptions);
+                const result = await response.json();
+                setIsLoading(false);
+
+                if (result?.result?.[0]?.IsFound === "True") {
+                    setDownload27Afile(result.result);
+
+                } else {
+                    console.log("No Data Found:", result?.result?.[0]?.Message);
+                    setDownload27Afile([]);
+                }
+            } catch (error) {
+                console.error("Error fetching the file:", error);
+            }
+        };
+
+        fetch27AFile();
+    }, [form.DepartmentTANId]);
+
+    console.log(download27Afile);
     return (
         <View style={{ flex: 1 }}>
             <View style={styles.stickyHeader}>
@@ -103,7 +140,7 @@ export default function TDSForm({ navigation }) {
                         </TouchableOpacity> */}
                     </View>
                 </View>
-                {
+                {isLoading ? <ActivityIndicator size="large" color={Colors.primary} /> :
                     download27Afile && download27Afile.length > 0 ? (
                         <AReportDownload
                             headers={['Sr. No', 'DepartmentName', 'TAN', 'Year', 'Action']}
@@ -123,6 +160,7 @@ export default function TDSForm({ navigation }) {
                         </View>
                     )
                 }
+
             </ScrollView>
 
         </View>

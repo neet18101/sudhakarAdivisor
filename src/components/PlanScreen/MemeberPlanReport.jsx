@@ -1,16 +1,20 @@
-import { Text, View } from "react-native-animatable";
+import { Text, View, ScrollView, TextInput, TouchableOpacity, FlatList } from "react-native";
 import GlobalHeader from "../../common/GlobalHeader";
 import { StyleSheet } from "react-native";
-import { ScrollView, TextInput, TouchableOpacity } from "react-native-gesture-handler";
 import Icon from "react-native-vector-icons/Ionicons";
 import { heightPercentageToDP as hp, widthPercentageToDP as wp } from "react-native-responsive-screen";
 import { useEffect, useState } from "react";
 import CustomPlanTypePicker from "../CustomPlanTypePicker";
 import CustomPlanPicker from "../CustomPlanPicker";
 import PaymentMethodPicker from "../PaymentMethodPicker";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Colors } from "../../constants";
+import DataTable from "../DataTable";
+import MemberPlanReportTable from "../../common/DataTable/MemberPlanReportTable";
+
 export function MemeberPlanReport({ navigation }) {
     const [memberId, setMemberId] = useState('');
-    const [data, setData] = useState(null);
+    const [data, setData] = useState([]);
     const [form, setForm] = useState({
         tan: '',
         planType: '',
@@ -18,47 +22,63 @@ export function MemeberPlanReport({ navigation }) {
         paymentMode: '',
         transactionNo: '',
         status: "",
+        fromDate: '',
+        toDate: '',
     });
+
     useEffect(() => {
-        const formdata = new FormData();
-        formdata.append("MemberPlanId", "-1");
-        formdata.append("MemberId", "-1");
-        formdata.append("PlanDetailId", "-1");
-        formdata.append("MemberPlanNo", "");
-        formdata.append("Status", "Z");
-        formdata.append("Tan", "");
-        formdata.append("TransactionId", "");
-        formdata.append("FromDate", "03/11/2024");
-        formdata.append("ToDate", "23/11/2024");
+        const fetchToken = async () => {
+            const formdata = new FormData();
+            const member_id = await AsyncStorage.getItem('member_id');
+            formdata.append("MemberPlanId", "-1");
+            formdata.append("MemberId", member_id);
+            formdata.append("PlanDetailId", "-1");
+            formdata.append("MemberPlanNo", "");
+            formdata.append("Status", "Z");
+            formdata.append("Tan", "");
+            formdata.append("TransactionId", "");
+            formdata.append("FromDate", "03/11/2024");
+            formdata.append("ToDate", "23/11/2024");
 
-        const requestOptions = {
-            method: "POST",
-            body: formdata,
-            redirect: "follow",
+            const requestOptions = {
+                method: "POST",
+                body: formdata,
+                redirect: "follow",
+            };
+            fetch("https://paytds.com/JsonService/MemberPlanDetail.aspx", requestOptions)
+                .then((response) => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then((result) => {
+                    setData(result?.result);
+                })
+                .catch((error) => console.error('Error:', error));
         };
-        fetch("https://paytds.com/JsonService/MemberPlanDetail.aspx", requestOptions)
-            .then((response) => {
-                // Check content type to decide how to parse
-                const contentType = response.headers.get("Content-Type");
-                if (contentType && contentType.includes("application/json")) {
-                    return response.json(); // Parse as JSON
-                } else {
-                    return response.text(); // Parse as plain text
-                }
-            })
-            .then((data) => {
-                if (typeof data === "string") {
-                    const parsedResponse = JSON.parse(data);
-                    console.log("Raw Text Response:", parsedResponse);
-                } else {
-                    console.log("Parsed JSON Response:", data);
-                }
-            })
-            .catch((error) => console.error("Error:", error));
 
+        fetchToken();
     }, []);
 
-    console.log(data);
+    const TableHeader = () => (
+        <View style={styles.tableHeader}>
+            <Text style={styles.headerText}>Plan Name</Text>
+            <Text style={styles.headerText}>Benefit</Text>
+            <Text style={styles.headerText}>Price</Text>
+            <Text style={styles.headerText}>Status</Text>
+        </View>
+    );
+
+    const TableRow = ({ item }) => (
+        <View style={styles.tableRow}>
+            <Text style={styles.rowText}>{item.PlanName}</Text>
+            <Text style={styles.rowText}>{item.Benifit}</Text>
+            <Text style={styles.rowText}>{item.Price}</Text>
+            <Text style={styles.rowText}>{item.Status}</Text>
+        </View>
+    );
+
     return (
         <View style={{ flex: 1 }}>
             <View style={styles.stickyHeader}>
@@ -66,7 +86,7 @@ export function MemeberPlanReport({ navigation }) {
                     title="Member Plan Report"
                     leftComponent={
                         <TouchableOpacity onPress={() => navigation.goBack()}>
-                            <Icon name="arrow-back" size={wp(6)} color={Colors.white} />
+                            <Icon name="arrow-back" size={wp(6)} color="#fff" />
                         </TouchableOpacity>
                     }
                 />
@@ -95,7 +115,6 @@ export function MemeberPlanReport({ navigation }) {
                             placeholder="--Select--"
                             onValueChange={value => {
                                 setForm({ ...form, planType: value });
-
                             }}
                         />
                     </View>
@@ -107,7 +126,6 @@ export function MemeberPlanReport({ navigation }) {
                             placeholder="--Select--"
                             onValueChange={value => {
                                 setForm({ ...form, plan: value });
-                                setError({ ...error, plan: '' });
                             }}
                             planTypeId={form.planType}
                         />
@@ -120,20 +138,37 @@ export function MemeberPlanReport({ navigation }) {
                             placeholder="Select a payment method"
                             onValueChange={value => {
                                 setForm({ ...form, paymentMode: value });
-
                             }}
                         />
+                    </View>
 
+                    <View style={styles.inputContainer}>
+                        <TouchableOpacity style={styles.saveButton}>
+                            <Text style={styles.buttonText}>Search</Text>
+                        </TouchableOpacity>
                     </View>
                 </View>
+
+                {data&&data?.length > 0 &&(
+                    <MemberPlanReportTable
+                        headers={['Sr. No.', 'Price (Rs.)', 'Description', 'Action']}
+                        data={data.map((item, index) => ({
+                            srNo: index + 1,
+                            price: item.Price,
+                            description: item,
+                            // benefit: item.ApprovalRemark,
+                            Status: item.ApprovalRemark,
+
+                        }))}
+                        onActionPress={(item) => handleSubmit(item)}
+                       
+                    />
+                )}
             </ScrollView>
-
         </View>
-
-
-
-    )
+    );
 }
+
 const styles = StyleSheet.create({
     stickyHeader: {
         position: 'absolute',
@@ -141,13 +176,12 @@ const styles = StyleSheet.create({
         left: 0,
         right: 0,
         zIndex: 1000,
-        backgroundColor: Colors.primary,
+        backgroundColor: '#1E88E5',
     },
     container: {
         flex: 1,
         paddingHorizontal: wp(5),
         paddingVertical: hp(3),
-        // backgroundColor: '#fff',
     },
     inputContainer: {
         marginBottom: hp(2),
@@ -163,7 +197,7 @@ const styles = StyleSheet.create({
     },
     input: {
         height: hp(6),
-        borderColor: Colors.gray,
+        borderColor: '#ccc',
         borderWidth: 1,
         borderRadius: wp(2),
         paddingHorizontal: wp(3),
@@ -171,20 +205,43 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
         color: '#333',
     },
-    textArea: {
-        borderColor: Colors.gray,
-        borderWidth: 1,
-        borderRadius: wp(2),
-        paddingHorizontal: wp(3),
+    tableHeader: {
+        flexDirection: 'row',
+        backgroundColor: '#f1f1f1',
+        paddingVertical: 10,
+        backgroundColor: Colors.primary,
+    },
+    headerText: {
+        flex: 1,
+        fontWeight: 'bold',
+        fontSize: wp(4),
+        textAlign: 'center',
+        color: '#fff',
+    },
+    tableRow: {
+        flexDirection: 'row',
+        borderBottomWidth: 1,
+        borderBottomColor: '#ccc',
+        paddingVertical: 10,
+    },
+    rowText: {
+        flex: 1,
+        fontSize: wp(4),
+        textAlign: 'center',
+        color: '#333',
+    },
+    saveButton: {
+        backgroundColor:  Colors.primary,
         paddingVertical: hp(1.5),
-        fontSize: wp(4),
-        backgroundColor: '#fff',
-        color: '#333',
-        textAlignVertical: 'top',
+        paddingHorizontal: wp(6),
+        borderRadius: wp(2),
+        flex: 1,
+        marginRight: wp(2),
     },
-    errorText: {
-        color: 'red',
-        fontSize: wp(3.2),
-        marginTop: hp(0.5),
+    buttonText: {
+        color: '#fff',
+        fontSize: wp(4),
+        fontWeight: 'bold',
+        textAlign: 'center',
     },
 });

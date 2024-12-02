@@ -7,14 +7,10 @@ import {
   widthPercentageToDP as wp,
 } from 'react-native-responsive-screen';
 import Icon from 'react-native-vector-icons/Ionicons';
-import GlobalDepartmentByUserPhoneNumber from "../../common/GlobalDepartmentByUserPhoneNumber";
 import { useState } from "react";
-import CustomYearPicker from "../../common/Year";
-import CustomQuartorPicker from "../../common/Quarter";
 import URLActivity from "../../utlis/URLActivity";
-import DataTable from "../DataTable";
 import AReportDownload from "../../common/DataTable/AReportDownload";
-import CustomMonthPicker from "../../common/Month";
+import SessionPicker from "../../common/SessionPicker";
 export default function FormPartA({ navigation }) {
   const [form, setForm] = useState({
     Pan: "",
@@ -46,7 +42,6 @@ export default function FormPartA({ navigation }) {
       Alert.alert("Error", "Failed to fetch data. Please try again later.");
     }
   };
-  console.log(form);
   return (
     <View style={{ flex: 1 }}>
       <View style={styles.stickyHeader}>
@@ -63,6 +58,17 @@ export default function FormPartA({ navigation }) {
         <View style={styles.container}>
           <View style={styles.inputContainer}>
             <Text style={styles.label}>
+              Financial Year <Text style={styles.asterisk}>*</Text>
+            </Text>
+            <SessionPicker
+              placeholder={"Select Financial Year"}
+              onValueChange={value => {
+                setForm({ ...form, SessionId: value });
+              }}
+            />
+          </View>
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>
               Pan <Text style={styles.asterisk}>*</Text>
             </Text>
             <TextInput
@@ -76,47 +82,14 @@ export default function FormPartA({ navigation }) {
               maxLength={10}
               style={styles.inputControl}
               value={form.Pan}
-            />  
-
-
-          </View>
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>
-              Year <Text style={styles.asterisk}>*</Text>
-            </Text>
-
-            <TextInput
-              autoCapitalize="characters"
-              autoCorrect={false}
-              clearButtonMode="while-editing"
-              keyboardType="email-address"
-              onChangeText={SessionId => setForm({ ...form, SessionId })}
-              placeholder="Enter Year"
-              placeholderTextColor="#6b7280"
-              maxLength={10}
-              style={styles.inputControl}
-              value={form.SessionId}
             />
 
+
           </View>
-          {/* <View style={styles.inputContainer}>
-                        <Text style={styles.label}>
-                            Month <Text style={styles.asterisk}>*</Text>
-                        </Text>
-                        <CustomMonthPicker
-                            placeholder={"Select Month"}
-                            onValueChange={value => {
-                                setForm({ ...form, MonthId: value });
-                            }}
-                        />
-                    </View> */}
           <View style={styles.buttonContainer}>
             <TouchableOpacity style={styles.saveButton} onPress={handleSearch}>
               <Text style={styles.buttonText}>Search</Text>
             </TouchableOpacity>
-            {/* <TouchableOpacity style={styles.cancelButton}>
-                            <Text style={styles.buttonText}>Cancel</Text>
-                        </TouchableOpacity> */}
           </View>
         </View>
         {
@@ -125,9 +98,9 @@ export default function FormPartA({ navigation }) {
               headers={['Sr. No', 'Pan', 'Session', 'Action']}
               data={downloadChallanfile.map((item, index) => ({
                 srNo: index + 1,
-                DepartmentName: item.Pan,
-                year: item.M02_SessionId,
-                downloadUrl: item.Path,
+                DepartmentName: item?.Pan,
+                year: item?.M02_SessionId,
+                downloadUrl: item?.Path,
               }))}
               actionText="Download"
             />
@@ -140,7 +113,6 @@ export default function FormPartA({ navigation }) {
           )
         }
       </ScrollView>
-
     </View>
   )
 }

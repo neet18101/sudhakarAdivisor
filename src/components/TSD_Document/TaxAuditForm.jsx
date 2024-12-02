@@ -1,6 +1,6 @@
 import { Text, View } from "react-native-animatable";
 import GlobalHeader from "../../common/GlobalHeader";
-import { Alert, StyleSheet, TouchableOpacity } from "react-native";
+import { ActivityIndicator, Alert, StyleSheet, TouchableOpacity } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import {
     heightPercentageToDP as hp,
@@ -8,7 +8,7 @@ import {
 } from 'react-native-responsive-screen';
 import Icon from 'react-native-vector-icons/Ionicons';
 import GlobalDepartmentByUserPhoneNumber from "../../common/GlobalDepartmentByUserPhoneNumber";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import CustomYearPicker from "../../common/Year";
 import CustomQuartorPicker from "../../common/Quarter";
 import URLActivity from "../../utlis/URLActivity";
@@ -22,13 +22,13 @@ export default function TaxAuditForm({ navigation }) {
         YearId: "",
     });
     const [downloadChallanfile, setDownloadChallanfile] = useState(null);
+    const [isLoading, setIsLoading] = useState(false);
     const handleSearch = async () => {
+        setIsLoading(true);
         try {
             const formdata = new FormData();
             formdata.append("DepartmentTANId", form.DepartmentTANId);
             formdata.append("YearId", form.YearId);
-
-
             const requestOptions = {
                 method: "POST",
                 body: formdata,
@@ -36,6 +36,7 @@ export default function TaxAuditForm({ navigation }) {
             };
             const response = await fetch(URLActivity?.DownloadTaxAuditFile, requestOptions);
             const result = await response.json();
+            setIsLoading(false);
             if (result?.result?.[0]?.IsFound === "True") {
                 setDownloadChallanfile(result.result);
             } else {
@@ -47,12 +48,40 @@ export default function TaxAuditForm({ navigation }) {
             Alert.alert("Error", "Failed to fetch data. Please try again later.");
         }
     };
-    console.log(form);
+    useEffect(() => {
+        const fetchTaxAuditFile = async () => {
+            setIsLoading(true);
+            try {
+                const formdata = new FormData();
+                formdata.append("DepartmentTANId", form.DepartmentTANId);
+                formdata.append("YearId", "-1");
+                const requestOptions = {
+                    method: "POST",
+                    body: formdata,
+                    redirect: "follow",
+                };
+                const response = await fetch(URLActivity?.DownloadTaxAuditFile, requestOptions);
+                const result = await response.json();
+                setIsLoading(false);
+                if (result?.result?.[0]?.IsFound === "True") {
+
+                    setDownloadChallanfile(result.result);
+                } else {
+                    console.log("No Data Found:", result?.result?.[0]?.Message);
+                    setDownloadChallanfile([]);
+                }
+            } catch (error) {
+                console.error("Error during API call:", error);
+                Alert.alert("Error", "Failed to fetch data. Please try again later.");
+            }
+        };
+        fetchTaxAuditFile();
+    }, [form.DepartmentTANId])
     return (
         <View style={{ flex: 1 }}>
             <View style={styles.stickyHeader}>
                 <GlobalHeader
-                    title={"Challan Report"}
+                    title={"Tax Audit Report"}
                     leftComponent={
                         <TouchableOpacity onPress={() => navigation.goBack()}>
                             <Icon name="arrow-back" size={wp(6)} color={Colors.white} />
@@ -94,10 +123,10 @@ export default function TaxAuditForm({ navigation }) {
                         </TouchableOpacity> */}
                     </View>
                 </View>
-                {
+                {isLoading ? <ActivityIndicator size="large" color={Colors.primary} /> :
                     downloadChallanfile && downloadChallanfile.length > 0 ? (
                         <AReportDownload
-                            headers={['Sr. No', 'DepartmentName', 'Year', 'Action']}
+                            headers={['Sr. No', 'DepartmentName', 'TAN', 'Year', 'Action']}
                             data={downloadChallanfile.map((item, index) => ({
                                 srNo: index + 1,
                                 DepartmentName: item.DepartmentName,

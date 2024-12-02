@@ -13,75 +13,29 @@ const AReportDownload = ({ headers, data, onActionPress, actionText }) => {
         setSelectedBenefit(benefit);
         setSelectedDescription(description);
         setModalVisible(true);
-    };
-    const requestStoragePermission = async () => {
-        if (Platform.OS === 'android' && Platform.Version >= 23) {
-            try {
-                const granted = await PermissionsAndroid.requestMultiple([
-                    PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
-                    PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
-                ]);
-
-                if (
-                    granted[PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE] === PermissionsAndroid.RESULTS.GRANTED &&
-                    granted[PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE] === PermissionsAndroid.RESULTS.GRANTED
-                ) {
-                    console.log('Storage permissions granted');
-                    return true;
-                } else {
-                    console.log('Storage permissions denied');
-                    return false;
-                }
-            } catch (err) {
-                console.warn(err);
-                return false;
-            }
-        } else {
-
-            return true;
-        }
-    };
-    const handleFileDownload = async (url) => {
-        const hasPermission = await requestStoragePermission();
-        if (!hasPermission) {
-            alert('Storage permission is required to proceed.');
-            return;
-        }
-
-        // Proceed with the file download logic here
-        downloadFile(url);
-    };
-    const downloadFile = async (url) => {
-        const granted = await requestStoragePermission();
-        if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
-            alert('Storage permission is required to download the file.');
-            return;
-        }
-
-        const { config, fs } = RNFetchBlob;
-        const date = new Date();
-        const time = date.getTime();
-        const fileName = `${time}.pdf`;
-        const path = fs.dirs.DownloadDir + '/' + fileName;
-
-        const options = {
-            fileCache: true,
-            addAndroidDownloads: {
-                useDownloadManager: true,
-                notification: true,
-                path,
-                mime: 'application/pdf',
-            },
-        };
-
+    }
+    const handleFileDownload = async (fileUrl) => {
+        console.log(fileUrl, "hii nav")
         try {
-            await config(options).fetch('GET', url);
-            alert('File Saved Successfully.');
-        } catch (err) {
-            console.log('Download Error:', err);
+            const { config, fs } = RNFetchBlob;
+            const downloads = fs.dirs.DownloadDir; 
+            const options = {
+                fileCache: true,
+                addAndroidDownloads: {
+                    useDownloadManager: true,
+                    notification: true,
+                    path: `${downloads}/${fileUrl?.DepartmentName}`,
+                    description: 'Downloading file.',
+                },
+            };
+            const res = await config(options).fetch('GET', fileUrl?.downloadUrl);
+            console.log('File downloaded successfully:', res.path());
+            // showToast('File downloaded successfully', 'success');
+        } catch (error) {
+            console.error('Error downloading file:', error);
+            // showToast('Failed to download file', 'error');
         }
     };
-
     return (
         <View style={styles.container}>
             <View style={styles.tableHeader}>
@@ -104,7 +58,7 @@ const AReportDownload = ({ headers, data, onActionPress, actionText }) => {
                     <Text style={[styles.cell, styles.departCell]}>{item.DepartmentName}</Text>
                     <Text style={[styles.cell, styles.yearCell]}>{item.year}</Text>
                     <View style={styles.buttonCell}>
-                        <TouchableOpacity style={styles.button} onPress={() => handleFileDownload(item?.downloadUrl)}>
+                        <TouchableOpacity style={styles.button} onPress={() => handleFileDownload(item)}>
                             <Text style={styles.buttonText}>{actionText}</Text>
                         </TouchableOpacity>
                     </View>

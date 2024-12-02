@@ -1,11 +1,9 @@
-import {View, Text} from 'react-native';
 import React from 'react';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
-import {HomeScreen, ITRUpload, Profile, PlanScreen} from '../screens';
+import {HomeScreen, ITRUpload, Profile, PlanScreen, complaintsScreen} from '../screens';
 import {Colors} from '../constants';
 import Icon from 'react-native-vector-icons/Ionicons';
 import * as Animatable from 'react-native-animatable';
-
 const Tab = createBottomTabNavigator();
 
 const BottomTab = () => {
@@ -58,23 +56,23 @@ const BottomTab = () => {
       />
       <Tab.Screen
         name="Compalints"
-        component={ITRUpload}
+        component={complaintsScreen}
         options={{
           tabBarIcon: ({focused}) => (
             <Animatable.View
-              animation={focused ? 'bounceIn' : 'fadeIn'}                      
+              animation={focused ? 'bounceIn' : 'fadeIn'}
               duration={500}>
               <Icon
                 name="alert-circle-outline"
                 size={22}
                 color={focused ? Colors.primary : 'grey'}
-              />                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              
+              />
             </Animatable.View>
           ),
           headerShown: false,
         }}
       />
-       <Tab.Screen
+      <Tab.Screen
         name="Plan"
         component={PlanScreen}
         options={{
@@ -107,9 +105,9 @@ const BottomTab = () => {
               />
             </Animatable.View>
           ),
+          headerShown: false,
         }}
       />
-     
     </Tab.Navigator>
   );
 };

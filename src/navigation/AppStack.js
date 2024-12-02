@@ -17,6 +17,7 @@ import {
   AcknowledgementReceiptForm,
   AcknowledgementUpdateReceiptForm,
   FormPartB,
+  ITRUpload,
 } from '../screens';
 import {MemeberPlanReport} from '../components/PlanScreen/MemeberPlanReport';
 
@@ -28,6 +29,7 @@ const AppStack = () => {
       <Stack.Screen name="HomeScreen" component={BottomTab} />
       <Stack.Screen name="FormSixteen" component={FormSixteenList} />
       <Stack.Screen name="FormPartA" component={FormPartA} />
+      <Stack.Screen name="ITRUpload" component={ITRUpload} />
       <Stack.Screen name="FormPartB" component={FormPartB} />
       <Stack.Screen name="TDS_Document" component={TDS_Document} />
       <Stack.Screen name="CreateComplaints" component={CreateComplaints} />

@@ -1,13 +1,14 @@
-import { View, Text } from 'react-native'
-import React from 'react'
+import React from 'react';
+import MainProfile from '../components/Profile/MainProfile';
+import Header from '../components/HomeScreen/Header';
 
 const Profile = () => {
   return (
-    <View>
-     
-      <Text>Profile</Text>
-    </View>
-  )
-}
+    <>
+      <Header />
+      <MainProfile />
+    </>
+  );
+};
 
-export default Profile
+export default Profile;

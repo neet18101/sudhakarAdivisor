@@ -1,6 +1,6 @@
 import { Text, View } from "react-native-animatable";
 import GlobalHeader from "../../common/GlobalHeader";
-import { Alert, StyleSheet, TouchableOpacity } from "react-native";
+import { ActivityIndicator, Alert, StyleSheet, TouchableOpacity } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import {
     heightPercentageToDP as hp,
@@ -8,7 +8,7 @@ import {
 } from 'react-native-responsive-screen';
 import Icon from 'react-native-vector-icons/Ionicons';
 import GlobalDepartmentByUserPhoneNumber from "../../common/GlobalDepartmentByUserPhoneNumber";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import CustomYearPicker from "../../common/Year";
 import CustomQuartorPicker from "../../common/Quarter";
 import URLActivity from "../../utlis/URLActivity";
@@ -22,7 +22,9 @@ export default function ChallanReport({ navigation }) {
         MonthId: ""
     });
     const [downloadChallanfile, setDownloadChallanfile] = useState(null);
+    const [isLoading, setIsLoading] = useState(false);
     const handleSearch = async () => {
+        setIsLoading(true);
         try {
             const formdata = new FormData();
             formdata.append("DepartmentTANId", form.DepartmentTANId);
@@ -36,6 +38,7 @@ export default function ChallanReport({ navigation }) {
             };
             const response = await fetch(URLActivity?.DownloadChallanFile, requestOptions);
             const result = await response.json();
+            setIsLoading(false);
             if (result?.result?.[0]?.IsFound === "True") {
                 setDownloadChallanfile(result.result);
             } else {
@@ -47,7 +50,38 @@ export default function ChallanReport({ navigation }) {
             Alert.alert("Error", "Failed to fetch data. Please try again later.");
         }
     };
-    console.log(form);
+    useEffect(() => {
+        const fetch27AFile = async () => {
+            setIsLoading(true);
+            try {
+                const formdata = new FormData();
+                formdata.append("DepartmentTANId", form.DepartmentTANId);
+                formdata.append("YearId", "-1");
+                formdata.append("MonthId", "-1");
+
+                const requestOptions = {
+                    method: "POST",
+                    body: formdata,
+                    redirect: "follow",
+                };
+                const response = await fetch(URLActivity?.DownloadChallanFile, requestOptions);
+                const result = await response.json();
+                setIsLoading(false);
+                if (result?.result?.[0]?.IsFound === "True") {
+
+                    setDownloadChallanfile(result.result);
+                } else {
+                    console.log("No Data Found:", result?.result?.[0]?.Message);
+                    setDownloadChallanfile([]);
+                }
+            } catch (error) {
+                console.error("Error during API call:", error);
+                Alert.alert("Error", "Failed to fetch data. Please try again later.");
+            }
+        };
+        fetch27AFile();
+    }, [form.DepartmentTANId])
+
     return (
         <View style={{ flex: 1 }}>
             <View style={styles.stickyHeader}>
@@ -104,10 +138,10 @@ export default function ChallanReport({ navigation }) {
                         </TouchableOpacity> */}
                     </View>
                 </View>
-                {
+                {isLoading ? <ActivityIndicator size="large" color={Colors.primary} /> :
                     downloadChallanfile && downloadChallanfile.length > 0 ? (
                         <AReportDownload
-                            headers={['Sr. No', 'DepartmentName', 'Year', 'Action']}
+                            headers={['Sr. No', 'DepartmentName', 'TAN', 'Year', 'Action']}
                             data={downloadChallanfile.map((item, index) => ({
                                 srNo: index + 1,
                                 DepartmentName: item.DepartmentName,
@@ -131,7 +165,7 @@ export default function ChallanReport({ navigation }) {
 }
 const styles = StyleSheet.create({
     stickyHeader: {
-        position: 'absolute',
+        position: 'absolute', 
         top: 0,
         left: 0,
         right: 0,

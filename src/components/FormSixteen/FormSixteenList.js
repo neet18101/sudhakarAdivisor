@@ -34,11 +34,11 @@ const FormSixteenList = () => {
       name: 'Form 16 Part B',
       navigation: 'FormPartB',
     },
-    {
-      icon: 'cloud-upload-outline',
-      name: 'ITR File Request',
-      navigation: 'ITRUpload',
-    },
+    // {
+    //   icon: 'cloud-upload-outline',
+    //   name: 'ITR File Request',
+    //   navigation: 'ITRUpload',
+    // },
     // {
     //   icon: 'cloud-download-outline',
     //   name: 'Download Challan',

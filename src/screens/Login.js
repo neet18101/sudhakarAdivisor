@@ -53,9 +53,15 @@ export default function Login({navigation}) {
         await AsyncStorage.setItem('username', data?.result[0]?.Name);
         await AsyncStorage.setItem('email', data?.result[0]?.Mail);
         await AsyncStorage.setItem('phoneNo', data?.result[0]?.Mobile);
-        await AsyncStorage.setItem('username', data?.result[0]?.Name);
         await AsyncStorage.setItem('role', String(data?.result[0]?.UserRole));
-        await AsyncStorage.setItem('member_id', String(data?.result[0]?.MemberID));
+        await AsyncStorage.setItem(
+          'member_id',
+          String(data?.result[0]?.MemberID),
+        );
+        await AsyncStorage.setItem(
+          'RegisType',
+          String(data?.result[0]?.RegisType),
+        );
         // await AsyncStorage.setItem('device_id', deviceId);
         const userToken = data?.result[0]?.UserCode;
         await login(userToken);
@@ -76,7 +82,6 @@ export default function Login({navigation}) {
         color={Colors.primary}></ActivityIndicator>
     </View>;
   }
-  
 
   return (
     <SafeAreaView style={{flex: 1, backgroundColor: '#fff'}}>

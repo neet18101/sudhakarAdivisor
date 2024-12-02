@@ -15,6 +15,7 @@ import URLActivity from "../../utlis/URLActivity";
 import DataTable from "../DataTable";
 import AReportDownload from "../../common/DataTable/AReportDownload";
 import CustomMonthPicker from "../../common/Month";
+import SessionPicker from "../../common/SessionPicker";
 export default function FormPartB({ navigation }) {
     const [form, setForm] = useState({
         Pan: "",
@@ -63,6 +64,17 @@ export default function FormPartB({ navigation }) {
                 <View style={styles.container}>
                     <View style={styles.inputContainer}>
                         <Text style={styles.label}>
+                            Financial Year <Text style={styles.asterisk}>*</Text>
+                        </Text>
+                        <SessionPicker
+                            placeholder={"Select Financial Year"}
+                            onValueChange={value => {
+                                setForm({ ...form, SessionId: value });
+                            }}
+                        />
+                    </View>
+                    <View style={styles.inputContainer}>
+                        <Text style={styles.label}>
                             Pan <Text style={styles.asterisk}>*</Text>
                         </Text>
                         <TextInput
@@ -80,43 +92,11 @@ export default function FormPartB({ navigation }) {
 
 
                     </View>
-                    <View style={styles.inputContainer}>
-                        <Text style={styles.label}>
-                            Year <Text style={styles.asterisk}>*</Text>
-                        </Text>
 
-                        <TextInput
-                            autoCapitalize="characters"
-                            autoCorrect={false}
-                            clearButtonMode="while-editing"
-                            keyboardType="email-address"
-                            onChangeText={SessionId => setForm({ ...form, SessionId })}
-                            placeholder="Enter Year"
-                            placeholderTextColor="#6b7280"
-                            maxLength={10}
-                            style={styles.inputControl}
-                            value={form.SessionId}
-                        />
-
-                    </View>
-                    {/* <View style={styles.inputContainer}>
-                        <Text style={styles.label}>
-                            Month <Text style={styles.asterisk}>*</Text>
-                        </Text>
-                        <CustomMonthPicker
-                            placeholder={"Select Month"}
-                            onValueChange={value => {
-                                setForm({ ...form, MonthId: value });
-                            }}
-                        />
-                    </View> */}
                     <View style={styles.buttonContainer}>
                         <TouchableOpacity style={styles.saveButton} onPress={handleSearch}>
                             <Text style={styles.buttonText}>Search</Text>
                         </TouchableOpacity>
-                        {/* <TouchableOpacity style={styles.cancelButton}>
-                            <Text style={styles.buttonText}>Cancel</Text>
-                        </TouchableOpacity> */}
                     </View>
                 </View>
                 {
