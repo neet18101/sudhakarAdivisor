@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {Text, View, StyleSheet, FlatList, TouchableOpacity} from 'react-native';
 import {
   heightPercentageToDP as hp,
@@ -7,6 +7,7 @@ import {
 import {useNavigation} from '@react-navigation/native';
 import colors from '../../constants/Colors';
 import Icon from 'react-native-vector-icons/Ionicons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Custom Header Component
 const Header = ({title, leftComponent}) => {
@@ -22,6 +23,14 @@ const Header = ({title, leftComponent}) => {
 
 const FormSixteenList = () => {
   const navigation = useNavigation();
+  const [isRegisType, setRegisType] = useState(false);
+  useEffect(() => {
+    const fetchData = async () => {
+      const regisType = await AsyncStorage.getItem('RegisType');
+      if (regisType === '2') setRegisType(true);
+    };
+    fetchData();
+  }, []);
 
   const options = [
     {
@@ -34,26 +43,13 @@ const FormSixteenList = () => {
       name: 'Form 16 Part B',
       navigation: 'FormPartB',
     },
-    // {
-    //   icon: 'cloud-upload-outline',
-    //   name: 'ITR File Request',
-    //   navigation: 'ITRUpload',
-    // },
-    // {
-    //   icon: 'cloud-download-outline',
-    //   name: 'Download Challan',
-    //   navigation: 'DownloadChallan',
-    // },
-    // {
-    //   icon: 'receipt-outline',
-    //   name: 'Acknowledgement Receipt (Download)',
-    //   navigation: 'AcknowledgementReceipt',
-    // },
-    // {
-    //   icon: 'analytics-outline',
-    //   name: 'Tax Audit Report (Download)',
-    //   navigation: 'TaxAuditReport',
-    // },
+  ];
+  const Employee26 = [
+    {
+      icon: 'document-text-outline',
+      name: 'Form 16 (26Q)',
+      navigation: 'FormPartA26Q' 
+    },
   ];
 
   return (
@@ -69,7 +65,7 @@ const FormSixteenList = () => {
       <View style={styles.container}>
         <Text style={styles.featuresText}>Form 16 Options</Text>
         <FlatList
-          data={options}
+          data={isRegisType ? Employee26 : options}
           renderItem={({item}) => (
             <TouchableOpacity
               style={styles.optionButton}

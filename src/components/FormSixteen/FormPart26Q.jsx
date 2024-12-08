@@ -1,92 +1,86 @@
+
+
 import { Text, View } from "react-native-animatable";
 import GlobalHeader from "../../common/GlobalHeader";
-import { ActivityIndicator, Alert, StyleSheet, TouchableOpacity } from "react-native";
-import { ScrollView } from "react-native-gesture-handler";
+import { Alert, StyleSheet, TouchableOpacity } from "react-native";
+import { ScrollView, TextInput } from "react-native-gesture-handler";
 import {
     heightPercentageToDP as hp,
     widthPercentageToDP as wp,
 } from 'react-native-responsive-screen';
 import Icon from 'react-native-vector-icons/Ionicons';
-import GlobalDepartmentByUserPhoneNumber from "../../common/GlobalDepartmentByUserPhoneNumber";
 import { useEffect, useState } from "react";
-import CustomYearPicker from "../../common/Year";
-import CustomQuartorPicker from "../../common/Quarter";
 import URLActivity from "../../utlis/URLActivity";
-import DataTable from "../DataTable";
 import AReportDownload from "../../common/DataTable/AReportDownload";
-export default function TDSForm({ navigation }) {
+import SessionPicker from "../../common/SessionPicker";
+import CustomQuartorPicker from "../../common/Quarter";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import Toast from "../../common/Toast";
+
+export default function FormPartA26Q({ navigation }) {
+    const [toastVisible, setToastVisible] = useState(false);
+    const [toastMessage, setToastMessage] = useState('');
+    const [toastType, setToastType] = useState('success');
+
+
     const [form, setForm] = useState({
-        DepartmentTANId: "",
-        YearId: "",
-        QuarterId: ""
+        Pan: "",
+        Quarter: "",
+        SessionId: ""
     });
-    const [download27Afile, setDownload27Afile] = useState(null);
-    const [isLoading, setIsLoading] = useState(false);
+    useEffect(() => {
+        const fetchUserToken = async () => {
+            try {
+                const userToken = await AsyncStorage.getItem('userToken');
+                setForm(prevForm => ({
+                    ...prevForm,
+                    Pan: userToken || ""
+                }));
+            } catch (error) {
+                console.error('Error fetching user token:', error);
+            }
+        };
+
+        fetchUserToken();
+    }, []);
+
+    const [downloadChallanfile, setDownloadChallanfile] = useState(null);
     const handleSearch = async () => {
-        setIsLoading(true);
         try {
             const formdata = new FormData();
-            formdata.append("DepartmentTANId", form.DepartmentTANId);
-            formdata.append("YearId", form.YearId);
-            formdata.append("QuarterId", form.QuarterId);
-
+            formdata.append("Pan", form.Pan);
+            formdata.append("Quarter", form.Quarter);
+            formdata.append("SessionId", form.SessionId);
+            console.log('Form Data:', formdata);
             const requestOptions = {
                 method: "POST",
                 body: formdata,
                 redirect: "follow",
             };
-            const response = await fetch(URLActivity?.Download27AFile, requestOptions);
+            const response = await fetch(URLActivity?.Form16Quarterly, requestOptions);
             const result = await response.json();
-            setIsLoading(false);
             if (result?.result?.[0]?.IsFound === "True") {
-                setDownload27Afile(result.result);
+                Alert.alert("Data Found");
+                setDownloadChallanfile(result.result);
             } else {
-                console.log("No Data Found:", result?.result?.[0]?.Message);
-                setDownload27Afile([]);
+
+
+                setToastVisible(true);
+                const message = result[0]?.Message || 'No message available';
+                setToastMessage(message);
+                setToastType('error');
+                setDownloadChallanfile([]);
             }
         } catch (error) {
             console.error("Error during API call:", error);
             Alert.alert("Error", "Failed to fetch data. Please try again later.");
         }
     };
-    useEffect(() => {
-        const fetch27AFile = async () => {
-            setIsLoading(true);
-            try {
-                const formdata = new FormData();
-                formdata.append("DepartmentTANId", form.DepartmentTANId);
-                formdata.append("YearId", "-1");
-                formdata.append("QuarterId", "-1");
-
-                const requestOptions = {
-                    method: "POST",
-                    body: formdata,
-                    redirect: "follow",
-                };
-
-                const response = await fetch(URLActivity?.Download27AFile, requestOptions);
-                const result = await response.json();
-                setIsLoading(false);
-
-                if (result?.result?.[0]?.IsFound === "True") {
-                    setDownload27Afile(result.result);
-
-                } else {
-                    console.log("No Data Found:", result?.result?.[0]?.Message);
-                    setDownload27Afile([]);
-                }
-            } catch (error) {
-                console.error("Error fetching the file:", error);
-            }
-        };
-
-        fetch27AFile();
-    }, [form.DepartmentTANId]);
     return (
         <View style={{ flex: 1 }}>
             <View style={styles.stickyHeader}>
                 <GlobalHeader
-                    title={"TDS 27A Report"}
+                    title={"Form 16 (26Q)"}
                     leftComponent={
                         <TouchableOpacity onPress={() => navigation.goBack()}>
                             <Icon name="arrow-back" size={wp(6)} color={Colors.white} />
@@ -98,55 +92,62 @@ export default function TDSForm({ navigation }) {
                 <View style={styles.container}>
                     <View style={styles.inputContainer}>
                         <Text style={styles.label}>
-                            Department <Text style={styles.asterisk}>*</Text>
-                        </Text>
-                        <GlobalDepartmentByUserPhoneNumber
-                            placeholder="Select Department"
-                            onValueChange={value => {
-                                setForm({ ...form, DepartmentTANId: value });
-                            }}
-                        />
-                    </View>
-                    <View style={styles.inputContainer}>
-                        <Text style={styles.label}>
-                            Year <Text style={styles.asterisk}>*</Text>
-                        </Text>
-                        <CustomYearPicker
-                            placeholder={"Select Year"}
-                            onValueChange={value => {
-                                setForm({ ...form, YearId: value });
-                            }}
-                        />
-                    </View>
-                    <View style={styles.inputContainer}>
-                        <Text style={styles.label}>
-                            Quarter <Text style={styles.asterisk}>*</Text>
+                            Quarter Year <Text style={styles.asterisk}>*</Text>
                         </Text>
                         <CustomQuartorPicker
-                            placeholder={"Select Quarter"}
+                            placeholder={"Select Quarter Year"}
                             onValueChange={value => {
-                                setForm({ ...form, QuarterId: value });
+                                setForm({ ...form, Quarter: value });
                             }}
                         />
+                    </View>
+                    <View style={styles.inputContainer}>
+                        <Text style={styles.label}>
+                            Financial Year <Text style={styles.asterisk}>*</Text>
+                        </Text>
+                        <SessionPicker
+                            placeholder={"Select Financial Year"}
+                            onValueChange={value => {
+                                setForm({ ...form, SessionId: value });
+                            }}
+                        />
+                    </View>
+                    <View style={styles.inputContainer}>
+                        <Text style={styles.label}>
+                            Pan <Text style={styles.asterisk}>*</Text>
+                        </Text>
+                        <TextInput
+
+                            autoCapitalize="characters"
+                            autoCorrect={false}
+                            clearButtonMode="while-editing"
+                            keyboardType="email-address"
+                            onChangeText={Pan => setForm({ ...form, Pan })}
+                            placeholder="Enter a Pan"
+                            placeholderTextColor="#6b7280"
+                            maxLength={10}
+                            style={styles.inputControl}
+                            value={form.Pan}
+                            editable={false}
+                        />
+
+
                     </View>
                     <View style={styles.buttonContainer}>
                         <TouchableOpacity style={styles.saveButton} onPress={handleSearch}>
                             <Text style={styles.buttonText}>Search</Text>
                         </TouchableOpacity>
-                        {/* <TouchableOpacity style={styles.cancelButton}>
-                            <Text style={styles.buttonText}>Cancel</Text>
-                        </TouchableOpacity> */}
                     </View>
                 </View>
-                {isLoading ? <ActivityIndicator size="large" color={Colors.primary} /> :
-                    download27Afile && download27Afile.length > 0 ? (
+                {
+                    downloadChallanfile && downloadChallanfile.length > 0 ? (
                         <AReportDownload
-                            headers={['Sr. No', 'DepartmentName', 'TAN', 'Year', 'Action']}
-                            data={download27Afile.map((item, index) => ({
+                            headers={['Sr. No', 'Pan', 'Session', 'Action']}
+                            data={downloadChallanfile.map((item, index) => ({
                                 srNo: index + 1,
-                                DepartmentName: item.DepartmentName,
-                                year: item.Year,
-                                downloadUrl: item.Path,
+                                DepartmentName: item?.Pan,
+                                year: item?.M02_SessionId,
+                                downloadUrl: item?.Path,
                             }))}
                             actionText="Download"
                         />
@@ -158,9 +159,15 @@ export default function TDSForm({ navigation }) {
                         </View>
                     )
                 }
-
+                <Toast
+                    visible={toastVisible}
+                    message={toastMessage}
+                    type={toastType}
+                    onHide={() => setToastVisible(false)}
+                    duration={3000}
+                    positionType="bottom-to-top"
+                />
             </ScrollView>
-
         </View>
     )
 }
@@ -170,7 +177,7 @@ const styles = StyleSheet.create({
         top: 0,
         left: 0,
         right: 0,
-        zIndex: 1000,
+        zIndex: 1,
         backgroundColor: Colors.primary,
     },
     container: {
@@ -242,5 +249,18 @@ const styles = StyleSheet.create({
         fontSize: wp(4),
         fontWeight: 'bold',
         textAlign: 'center',
+    },
+    inputControl: {
+        height: 50,
+        backgroundColor: '#fff',
+        paddingHorizontal: 16,
+        borderRadius: 12,
+        fontSize: 15,
+        fontWeight: '500',
+        color: '#222',
+        borderWidth: 1,
+        borderColor: '#C9D3DB',
+        borderStyle: 'solid',
+        flex: 1, // Ensures TextInput expands fully in row layout
     },
 });

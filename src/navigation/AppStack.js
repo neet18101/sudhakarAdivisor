@@ -18,8 +18,10 @@ import {
   AcknowledgementUpdateReceiptForm,
   FormPartB,
   ITRUpload,
+  FormPart26Q,
+  MemeberPlanReport,
 } from '../screens';
-import {MemeberPlanReport} from '../components/PlanScreen/MemeberPlanReport';
+
 
 const Stack = createNativeStackNavigator();
 
@@ -40,6 +42,7 @@ const AppStack = () => {
       <Stack.Screen name="TDSForm" component={TDSForm} />
       <Stack.Screen name="ChallanForm" component={ChallanReport} />
       <Stack.Screen name="TaxAuditForm" component={TaxAuditForm} />
+      <Stack.Screen name="FormPartA26Q" component={FormPart26Q} />
       <Stack.Screen
         name="AcknowledgementReceiptForm"
         component={AcknowledgementReceiptForm}

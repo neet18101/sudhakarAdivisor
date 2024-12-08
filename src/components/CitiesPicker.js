@@ -17,16 +17,17 @@ const CitiesPicker = ({ selectedValue, onValueChange, placeholder }) => {
     const [search, setSearch] = useState('');
     const [clicked, setClicked] = useState(false); // Use this to toggle Modal
     const [filteredData, setFilteredData] = useState(data);
+    const [selectedCategoryName, setSelectedCategoryName] = useState('');
     const searchRef = useRef();
     return (
-       
+
         <View style={styles.pickerContainer}>
             <TouchableOpacity
                 style={styles.pickerButton}
                 onPress={() => setClicked(true)} // Toggle modal
             >
                 <Text style={styles.pickerButtonText}>
-                    {selectedValue === '' ? placeholder : selectedValue}
+                    {selectedCategoryName === '' ? placeholder : selectedCategoryName}
                 </Text>
             </TouchableOpacity>
 
@@ -40,7 +41,7 @@ const CitiesPicker = ({ selectedValue, onValueChange, placeholder }) => {
                 >
                     <View style={styles.modalContainer}>
                         <View style={styles.dropdownContainer}>
-                            {/* <Text>{JSON.stringify(data)}</Text> */}
+                           
                             <FlatList
                                 data={data}
                                 keyExtractor={(item,index) =>index}  // Ensure `CatId` is unique and converted to string if necessary
@@ -48,8 +49,8 @@ const CitiesPicker = ({ selectedValue, onValueChange, placeholder }) => {
                                     <TouchableOpacity
                                         style={styles.listItem}
                                         onPress={() => {
-                                         console.log(item);
-                                            onValueChange(item.StateID);  // Update the selected value
+                                            setSelectedCategoryName(item.City);
+                                            onValueChange(item.CityID);  // Update the selected value
                                             setClicked(false);  // Close the modal after selecting
                                         }}
                                     >

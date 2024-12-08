@@ -7,10 +7,12 @@ import {
   widthPercentageToDP as wp,
 } from 'react-native-responsive-screen';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import URLActivity from "../../utlis/URLActivity";
 import AReportDownload from "../../common/DataTable/AReportDownload";
 import SessionPicker from "../../common/SessionPicker";
+import CustomQuartorPicker from "../../common/Quarter";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 export default function FormPartA({ navigation }) {
   const [form, setForm] = useState({
     Pan: "",
@@ -18,6 +20,24 @@ export default function FormPartA({ navigation }) {
     SessionId: ""
   });
   const [downloadChallanfile, setDownloadChallanfile] = useState(null);
+
+
+
+  useEffect(() => {
+    const fetchUserToken = async () => {
+        try {
+            const userToken = await AsyncStorage.getItem('userToken');
+            setForm(prevForm => ({
+                ...prevForm,
+                Pan: userToken || ""
+            }));
+        } catch (error) {
+            console.error('Error fetching user token:', error);
+        }
+    };
+
+    fetchUserToken();
+}, []);
   const handleSearch = async () => {
     try {
       const formdata = new FormData();
@@ -58,6 +78,17 @@ export default function FormPartA({ navigation }) {
         <View style={styles.container}>
           <View style={styles.inputContainer}>
             <Text style={styles.label}>
+              Quarter Year <Text style={styles.asterisk}>*</Text>
+            </Text>
+            <CustomQuartorPicker
+              placeholder={"Select Quarter Year"}
+              onValueChange={value => {
+                setForm({ ...form, SessionId: value });
+              }}
+            />
+          </View>
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>
               Financial Year <Text style={styles.asterisk}>*</Text>
             </Text>
             <SessionPicker
@@ -82,6 +113,7 @@ export default function FormPartA({ navigation }) {
               maxLength={10}
               style={styles.inputControl}
               value={form.Pan}
+              editable={false}
             />
 
 

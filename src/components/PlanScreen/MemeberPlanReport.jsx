@@ -12,7 +12,7 @@ import { Colors } from "../../constants";
 import DataTable from "../DataTable";
 import MemberPlanReportTable from "../../common/DataTable/MemberPlanReportTable";
 
-export function MemeberPlanReport({ navigation }) {
+export default function MemeberPlanReport({ navigation }) {
     const [memberId, setMemberId] = useState('');
     const [data, setData] = useState([]);
     const [form, setForm] = useState({
@@ -37,7 +37,7 @@ export function MemeberPlanReport({ navigation }) {
             formdata.append("Status", "Z");
             formdata.append("Tan", "");
             formdata.append("TransactionId", "");
-            formdata.append("FromDate", "03/11/2024");
+            formdata.append("FromDate", "01/01/2001");
             formdata.append("ToDate", "23/11/2024");
 
             const requestOptions = {

@@ -10,6 +10,8 @@ import URLActivity from '../utlis/URLActivity';
 
 const Home = ({navigation}) => {
   const [macAddress, setMacAddress] = useState('');
+  const [userDetails, setUserDetails] = useState([]);
+  const [employee27Api, setEmoployee27Api] = useState(false);
   useEffect(() => {
     const fetchMacAddress = async () => {
       const address = await DeviceInfo.getUniqueId();
@@ -17,14 +19,16 @@ const Home = ({navigation}) => {
     };
     fetchMacAddress();
   }, []);
-  console.log(macAddress);
-
   useEffect(() => {
     const fetchPhoneNumberAndData = async () => {
       try {
         const phoneNum = await AsyncStorage.getItem('phoneNo');
+        const tanNumber = await AsyncStorage.getItem('userToken');
+        const regisType = await AsyncStorage.getItem('RegisType');
+        if (regisType === '3') setEmoployee27Api(true);
+
         if (phoneNum) {
-          await callApi(phoneNum);
+          await userDetailsAPI(phoneNum, tanNumber);
         }
       } catch (error) {
         console.error('Error retrieving user token:', error);
@@ -32,29 +36,18 @@ const Home = ({navigation}) => {
     };
     fetchPhoneNumberAndData();
   }, []);
-
-  const callApi = async phoneNum => {
+  const userDetailsAPI = async (phoneNo, tan) => {
     const formdata = new FormData();
-    formdata.append('TanDepartId', '-1');
-    formdata.append('TanMemberId', '-1');
-    formdata.append('CityId', '-1');
-    formdata.append('RegisCode', '');
-    formdata.append('MobileNo', phoneNum);
-    formdata.append('Name', '');
-    formdata.append('TAN', '');
-    formdata.append('DeviceID', '');
-    formdata.append('Status', '"Z"');
-    formdata.append('', '');
-    const requestOptions = {
-      method: 'POST',
-      body: formdata,
-      redirect: 'follow',
-    };
+    formdata.append('MobileNo', phoneNo);
+    formdata.append('TAN_PAN', tan);
+    formdata.append('EmailId', '');
+
     try {
-      const response = await fetch(
-        URLActivity?.TanDepartmentList,
-        requestOptions,
-      );
+      const response = await fetch(URLActivity?.GetUserDetails, {
+        method: 'POST',
+        body: formdata,
+        redirect: 'follow',
+      });
       const result = await response.json();
 
       if (result.result && result.result.length > 0) {
@@ -67,14 +60,14 @@ const Home = ({navigation}) => {
       console.error('API Error:', error);
     }
   };
-
+  
   return (
     <>
       <View style={styles.container}>
         <Header navigation={navigation} />
       </View>
       <Slider />
-      <Fetaure navigation={navigation} />
+      <Fetaure navigation={navigation} Employee27={employee27Api} />
     </>
   );
 };
@@ -87,7 +80,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10, // For spacing between avatar and text
+    gap: 10,
   },
   avatar: {
     width: 45,

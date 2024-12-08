@@ -58,5 +58,8 @@ const URLActivity = {
   AcknowledgementUpdateReceiptForm:
     'https://paytds.com/JsonService/DownloadAcknowledgementUpdatedFile.aspx',
   PartA_PartBForm16: 'http://paytds.com/jsonService/PartA_PartBForm16.aspx',
+  GetUserDetails: 'https://paytds.com/JsonService/GetUserProfileDetail.aspx',
+  Form16Quarterly: 'http://paytds.com/JsonService/Form16Quarterly.aspx',
+  UpdateUserDetails: 'https://paytds.com//JsonService/UpdateCustomerProfile.aspx',
 };
 export default URLActivity;

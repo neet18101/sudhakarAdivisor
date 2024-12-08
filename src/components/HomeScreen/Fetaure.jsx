@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView } from "rea
 import { heightPercentageToDP as hp, widthPercentageToDP as wp } from 'react-native-responsive-screen';
 import colors from "../../constants/Colors";
 
-export default function Feature({ navigation }) {
+export default function Feature({ navigation, Employee27 }) {
     return (
         <ScrollView contentContainerStyle={styles.scrollContainer}>
             <View style={styles.container}>
@@ -32,20 +32,21 @@ export default function Feature({ navigation }) {
                         File e-Form Active (INC-22A) of your company for Active Company Tagging.
                     </Text>
                 </View>
+                {!Employee27 && (
+                    <View style={[styles.listCategory, { backgroundColor: '#A5F3FCFF' }]}>
+                        <TouchableOpacity onPress={() => navigation.navigate('FormSixteen')}>
+                            <View style={styles.listOption}>
+                                <Image source={require('../../assets/images/form.png')} style={styles.icon} />
+                                <Text style={styles.listText}>Form 16</Text>
+                            </View>
+                            <Text style={styles.listParagraph}>
+                                Finding it tough to calculate taxes and deductions? Here are some tools that can help solve your problem.
+                            </Text>
+                        </TouchableOpacity>
+                    </View>
 
+                )}
                 {/* Form 16 */}
-                <View style={[styles.listCategory, { backgroundColor: '#A5F3FCFF' }]}>
-                    <TouchableOpacity onPress={() => navigation.navigate('FormSixteen')}>
-                        <View style={styles.listOption}>
-                            <Image source={require('../../assets/images/form.png')} style={styles.icon} />
-                            <Text style={styles.listText}>Form 16</Text>
-                        </View>
-                        <Text style={styles.listParagraph}>
-                            Finding it tough to calculate taxes and deductions? Here are some tools that can help solve your problem.
-                        </Text>
-                    </TouchableOpacity>
-                </View>
-
                 {/* Download Challan Receipt */}
                 <View style={[styles.listCategory, { backgroundColor: '#FCD5A5' }]}>
                     <TouchableOpacity onPress={() => navigation.navigate('TDS_Document')}>

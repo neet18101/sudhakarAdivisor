@@ -54,6 +54,64 @@ export default function ComplaintsList({ navigation }) {
       setDate(`${day}/${month}/${year}`);
     }
   };
+  const getFormattedDate = () => {
+    const now = new Date();
+    const day = String(now.getDate()).padStart(2, '0'); // Ensure 2-digit day
+    const month = String(now.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+    const year = now.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
+
+  useEffect(() => {
+    const fetchToken = async () => {
+      const id = await AsyncStorage.getItem('id');
+      try {
+        const formdata = new FormData();
+        formdata.append("CustID", id);
+        formdata.append("RoleCode", "U");
+        formdata.append("TicketTypeID", "1");
+        formdata.append("FromDate", "01/01/2001");
+        formdata.append("ToDate", getFormattedDate());
+
+        const requestOptions = {
+          method: "POST",
+          body: formdata,
+          redirect: "follow",
+        };
+
+        console.log("Fetching data with formdata:", {
+          CustID: userId,
+          RoleCode: "U",
+          TicketTypeID: "1",
+          FromDate: "01/01/2001",
+          ToDate: getFormattedDate(),
+        });
+
+        const response = await fetch(URLActivity?.TicketList, requestOptions);
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const result = await response.json();
+        console.log("API response:", result);
+
+        if (result && result.result) {
+          setTableData(result.result); // Update the table data
+        } else {
+          console.warn("Unexpected response format");
+          setTableData([]); // Set empty data if the result format is unexpected
+        }
+      } catch (error) {
+        console.error("Error fetching ticket list:", error);
+        setTableData([]); // Reset the table data in case of an error
+      }
+    };
+
+    fetchToken();
+  }, []);
+
+
 
   const onSubmit = async () => {
     try {

@@ -20,4 +20,5 @@ export {default as AcknowledgementReceiptForm} from '../components/TSD_Document/
 export {default as AcknowledgementUpdateReceiptForm} from '../components/TSD_Document/AcknowledgementUpdateReceiptForm';
 export {default as FormPartB} from '../components/FormSixteen/FormPartB';
 export {default as complaintsScreen} from './ComplaintScreen.js'
+export {default as FormPart26Q} from '../components/FormSixteen/FormPart26Q';
 

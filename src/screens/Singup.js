@@ -9,6 +9,7 @@ import {
   Alert,
   ScrollView,
   FlatList,
+  StatusBar,
 } from 'react-native';
 import {
   KeyboardAwareScrollView,
@@ -20,13 +21,14 @@ import colors from '../constants/Colors';
 import CustomPicker from '../components/CustomPicker';
 import CitiesPicker from '../components/CitiesPicker';
 import DeviceInfo from 'react-native-device-info';
-import URLActivity, {RegisterLICAgent} from '../utlis/URLActivity';
+import URLActivity from '../utlis/URLActivity';
+import Toast from '../common/Toast';
 
 export default function Signup({navigation}) {
   const [deviceId, setDeviceId] = useState('');
 
   useEffect(() => {
-    DeviceInfo.getAndroidId().then((id) => {
+    DeviceInfo.getAndroidId().then(id => {
       setDeviceId(id);
     });
   }, []);
@@ -51,50 +53,53 @@ export default function Signup({navigation}) {
     M25_DepartmentId: '',
     RegisTypeId: '',
   });
-
+  const [toastVisible, setToastVisible] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastType, setToastType] = useState('success');
   const validateForm = () => {
     let valid = true;
-    let nameError = '';
-    let phoneError = '';
-    let panError = '';
-    let tanError = '';
-    let organizationError = '';
-    if (form.name.trim() === '') {
-      nameError = 'Name is required';
+    let newErrors = {};
+
+    if (!form.name.trim()) {
+      newErrors.name = 'Name is required';
       valid = false;
     }
-    const phoneRegex = /^[0-9]{10}$/;
-    if (!phoneRegex.test(form.phone)) {
-      phoneError = 'Phone number must be 10 digits';
+    if (!/^[0-9]{10}$/.test(form.MobileNo)) {
+      newErrors.MobileNo = 'Mobile number must be 10 digits';
+      valid = false;
+    }
+    if (!/^\S+@\S+\.\S+$/.test(form.EmailId)) {
+      newErrors.EmailId = 'Invalid email format';
+      valid = false;
+    }
+    if (!form.RegisTypeId) {
+      newErrors.RegisTypeId = 'Registration type is required';
       valid = false;
     }
     if (
-      form.RegisTypeId === 'Other than Employee(26Q)' ||
-      form.RegisTypeId === 'Employee(24Q)'
+      ['1', '2'].includes(form.RegisTypeId) &&
+      !/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(form.pan)
     ) {
-      const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
-      if (!panRegex.test(form.panNumber)) {
-        panError = 'Invalid PAN number format';
-        valid = false;
-      }
-    } else if (form.RegisTypeId === 'Employee(27A)') {
-      const tanRegex = /^[A-Z]{4}[0-9]{4}[A-Z]{1}$/;
-      if (!tanRegex.test(form.tanNumber)) {
-        tanError = 'Invalid TAN number format';
-        valid = false;
-      }
-    }
-    if (form.organization === '') {
-      organizationError = 'Please select an organization';
+      newErrors.pan = 'Invalid PAN number format';
       valid = false;
     }
-    setErrors({
-      name: nameError,
-      phone: phoneError,
-      panNumber: panError,
-      tanNumber: tanError,
-      organization: organizationError,
-    });
+    if (
+      form.RegisTypeId === '3' &&
+      !/^[A-Z]{4}[0-9]{5}[A-Z]{1}$/.test(form.tanNumber)
+    ) {
+      newErrors.tanNumber = 'Invalid TAN number format';
+      valid = false;
+    }
+    if (!form.M25_DepartmentId) {
+      newErrors.M25_DepartmentId = 'Please select an organization';
+      valid = false;
+    }
+    if (!form.M04_CityId) {
+      newErrors.M04_CityId = 'Please select a city';
+      valid = false;
+    }
+
+    setErrors(newErrors);
     return valid;
   };
   const getKeyboardType = value => {
@@ -104,8 +109,14 @@ export default function Signup({navigation}) {
       return 'numeric';
     }
   };
-
   const handleFormSubmit = async () => {
+    if (!validateForm()) {
+      setToastVisible(true);
+      setToastMessage('Please check the errors in the form.');
+      setToastType('error');
+      return;
+    }
+
     const formData = new FormData();
     formData.append('Name', form.name);
     formData.append('MobileNo', form.MobileNo);
@@ -115,9 +126,8 @@ export default function Signup({navigation}) {
     formData.append('M25_DepartmentId', form.M25_DepartmentId);
     formData.append('M04_CityId', form.M04_CityId);
     formData.append('RegisTypeId', form.RegisTypeId);
-    console.log('Form Data:', formData);
+
     try {
-     
       const response = await fetch(URLActivity.RegisterLICAgent, {
         method: 'POST',
         body: formData,
@@ -129,33 +139,36 @@ export default function Signup({navigation}) {
       if (!response.ok) {
         throw new Error('Network response was not ok');
       }
-      const rawText = (await response.text()).trim();
-      let responseData;
-      try {
-        responseData = rawText ? JSON.parse(rawText) : {};
-      } catch (parseError) {
-        throw new Error('Failed to parse JSON response');
-      }
-      const message =
-        responseData.result && responseData.result[0]
-          ? typeof responseData.result[0]['Message '] === 'string'
-            ? responseData.result[0]['Message '].trim()
-            : 'No message available'
-          : 'No message available';
 
-      Alert.alert('Response', message);
+      const responseData = await response.json();
+      console.log(responseData, 'ji');
 
-      if (responseData.result[0]?.IsFound === 'True') {
-        navigation.navigate('Login');
+      const result = responseData.result?.[0];
+      if (result?.IsFound === 'True') {
+        setToastVisible(true);
+        setToastMessage(result?.['Message ']);
+        setToastType('success');
+        setTimeout(() => {
+          navigation.navigate('Login');
+        }, 2000);
+      } else {
+        console.log(result);
+        setToastVisible(true);
+        const message = result?.['Message '] || 'No message available';
+        setToastMessage(message);
+        setToastType('error');
       }
     } catch (error) {
-      Alert.alert('Error', `Failed to submit the form: ${error.message}`);
       console.error('Error:', error);
+      setToastVisible(true);
+      setToastMessage('Network error: ' + error.message);
+      setToastType('error');
     }
   };
 
   return (
     <SafeAreaView style={{flex: 1, backgroundColor: '#fff'}}>
+      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
       <View style={styles.container}>
         <KeyboardAwareScrollView>
           <View style={styles.header}>
@@ -176,66 +189,101 @@ export default function Signup({navigation}) {
               <RadioButton
                 label="Other than Employee(26Q)"
                 selected={form.RegisTypeId === 1}
-                onPress={() =>
-                  setForm({...form, RegisTypeId: 1, pan: '', tanNumber: ''})
-                }
+                onPress={() => {
+                  setForm({...form, RegisTypeId: 1, pan: '', tanNumber: ''});
+                  setErrors({
+                    ...errors,
+                    RegisTypeId: '',
+                    pan: '',
+                    tanNumber: '',
+                  });
+                }}
               />
               <RadioButton
                 label="Employee(24Q)"
                 selected={form.RegisTypeId === 2}
-                onPress={() =>
-                  setForm({...form, RegisTypeId: 2, pan: '', tanNumber: ''})
-                }
+                onPress={() => {
+                  setForm({...form, RegisTypeId: 2, pan: '', tanNumber: ''});
+                  setErrors({
+                    ...errors,
+                    RegisTypeId: '',
+                    pan: '',
+                    tanNumber: '',
+                  });
+                }}
               />
               <RadioButton
                 label="Employee(27A)"
                 selected={form.RegisTypeId === 3}
-                onPress={() =>
-                  setForm({...form, RegisTypeId: 3, pan: '', tanNumber: ''})
-                }
+                onPress={() => {
+                  setForm({...form, RegisTypeId: 3, pan: '', tanNumber: ''});
+                  setErrors({
+                    ...errors,
+                    RegisTypeId: '',
+                    pan: '',
+                    tanNumber: '',
+                  });
+                }}
               />
             </View>
+            {errors.RegisTypeId && (
+              <Text style={styles.errorText}>{errors.RegisTypeId}</Text>
+            )}
 
             <View style={styles.input}>
               <Text style={styles.inputLabel}>Name.</Text>
               <TextInput
                 clearButtonMode="while-editing"
-                onChangeText={name => setForm({...form, name})}
                 placeholder="Name"
                 placeholderTextColor="#6b7280"
+                onChangeText={name => {
+                  setForm({...form, name});
+                  if (name.trim()) setErrors({...errors, name: ''});
+                }}
                 style={styles.inputControl}
                 value={form.name}
               />
-              {errors.name ? (
+              {errors.name && (
                 <Text style={styles.errorText}>{errors.name}</Text>
-              ) : null}
+              )}
             </View>
 
             <View style={styles.input}>
               <Text style={styles.inputLabel}>Mobile No.</Text>
               <TextInput
                 keyboardType="numeric"
-                onChangeText={MobileNo => setForm({...form, MobileNo})}
+                onChangeText={MobileNo => {
+                  setForm({...form, MobileNo});
+                  if (/^[0-9]{10}$/.test(MobileNo))
+                    setErrors({...errors, MobileNo: ''});
+                }}
                 placeholder="Mobile No."
                 maxLength={10}
                 placeholderTextColor="#6b7280"
                 style={styles.inputControl}
                 value={form.MobileNo}
               />
-              {errors.MobileNo ? (
+              {errors.MobileNo && (
                 <Text style={styles.errorText}>{errors.MobileNo}</Text>
-              ) : null}
+              )}
             </View>
             <View style={styles.input}>
               <Text style={styles.inputLabel}>Email Id </Text>
               <TextInput
                 keyboardType="email-address"
-                onChangeText={EmailId => setForm({...form, EmailId})}
+                onChangeText={EmailId => {
+                  setForm({...form, EmailId});
+                  if (/^\S+@\S+\.\S+$/.test(EmailId))
+                    setErrors({...errors, EmailId: ''});
+                }}
                 placeholder="Email Id"
                 placeholderTextColor="#6b7280"
                 style={styles.inputControl}
                 value={form.EmailId}
               />
+              {errors.EmailId && (
+                <Text style={styles.errorText}>{errors.EmailId}</Text>
+              )}
             </View>
 
             {form.RegisTypeId === 3 ? (
@@ -243,57 +291,72 @@ export default function Signup({navigation}) {
                 <Text style={styles.inputLabel}>TAN No.</Text>
                 <TextInput
                   autoCapitalize="characters"
-                  onChangeText={tanNumber => setForm({...form, tanNumber})}
+                  onChangeText={tanNumber => {
+                    setForm({...form, tanNumber});
+                    if (/^[A-Z]{4}[0-9]{5}[A-Z]{1}$/.test(tanNumber))
+                      setErrors({...errors, tanNumber: ''});
+                  }}
                   placeholder="Enter Tan No."
                   maxLength={10}
                   placeholderTextColor="#6b7280"
                   style={styles.inputControl}
                   value={form.tanNumber}
                 />
-                {errors.tanNumber ? (
+                {errors.tanNumber && (
                   <Text style={styles.errorText}>{errors.tanNumber}</Text>
-                ) : null}
+                )}
               </View>
             ) : (
               <View style={styles.input}>
                 <Text style={styles.inputLabel}>PAN No.</Text>
                 <TextInput
                   autoCapitalize="characters"
-                  onChangeText={pan => setForm({...form, pan})}
+                  onChangeText={pan => {
+                    setForm({...form, pan});
+                    if (/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(pan))
+                      setErrors({...errors, pan: ''});
+                  }}
                   placeholder="ABCDE1234F"
                   maxLength={10}
                   placeholderTextColor="#6b7280"
                   style={styles.inputControl}
                   value={form.pan}
                 />
-                {errors.pan ? (
+                {errors.pan && (
                   <Text style={styles.errorText}>{errors.pan}</Text>
-                ) : null}
+                )}
               </View>
             )}
             <View style={styles.input}>
               <Text style={styles.inputLabel}>Organization.</Text>
               <CustomPicker
                 selectedValue={form.M25_DepartmentId}
-                onValueChange={value =>
-                  setForm({...form, M25_DepartmentId: value})
-                }
+                onValueChange={value => {
+                  setForm({...form, M25_DepartmentId: value});
+                  if (value) setErrors({...errors, M25_DepartmentId: ''});
+                }}
                 placeholder="Select Organization"
                 style={{color: '#000'}}
               />
             </View>
-            {errors.organization ? (
-              <Text style={styles.errorText}>{errors.organization}</Text>
-            ) : null}
+            {errors.M25_DepartmentId && (
+              <Text style={styles.errorText}>{errors.M25_DepartmentId}</Text>
+            )}
 
             <View style={styles.input}>
               <Text style={styles.inputLabel}>Cities.</Text>
               <CitiesPicker
                 selectedValue={form.M04_CityId}
-                onValueChange={value => setForm({...form, M04_CityId: value})}
+                onValueChange={value => {
+                  setForm({...form, M04_CityId: value});
+                  if (value) setErrors({...errors, M04_CityId: ''});
+                }}
                 placeholder="Select City"
               />
             </View>
+            {errors.M04_CityId && (
+              <Text style={styles.errorText}>{errors.M04_CityId}</Text>
+            )}
 
             <View style={styles.formAction}>
               <TouchableOpacity onPress={handleFormSubmit}>
@@ -319,6 +382,13 @@ export default function Signup({navigation}) {
           </TouchableOpacity>
         </View>
       </View>
+      <Toast
+        visible={toastVisible}
+        message={toastMessage}
+        type={toastType}
+        onHide={() => setToastVisible(false)}
+        duration={3000}
+      />
     </SafeAreaView>
   );
 }
