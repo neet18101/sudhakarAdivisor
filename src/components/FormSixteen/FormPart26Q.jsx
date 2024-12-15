@@ -16,11 +16,13 @@ import SessionPicker from "../../common/SessionPicker";
 import CustomQuartorPicker from "../../common/Quarter";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Toast from "../../common/Toast";
+import { Colors } from "../../constants";
 
 export default function FormPartA26Q({ navigation }) {
     const [toastVisible, setToastVisible] = useState(false);
     const [toastMessage, setToastMessage] = useState('');
     const [toastType, setToastType] = useState('success');
+    const [loginToken, setLoginToken] = useState('');
 
 
     const [form, setForm] = useState({
@@ -32,6 +34,8 @@ export default function FormPartA26Q({ navigation }) {
         const fetchUserToken = async () => {
             try {
                 const userToken = await AsyncStorage.getItem('userToken');
+                const loginToken = await AsyncStorage.getItem('loginToken');
+                setLoginToken(loginToken || '');
                 setForm(prevForm => ({
                     ...prevForm,
                     Pan: userToken || ""
@@ -45,13 +49,58 @@ export default function FormPartA26Q({ navigation }) {
     }, []);
 
     const [downloadChallanfile, setDownloadChallanfile] = useState(null);
+
+    useEffect(() => {
+        if (form.Pan) {
+            fetchData();
+        }
+    }, [form.Pan]);
+
+    const fetchData = async () => {
+        try {
+            const formdata = new FormData();
+            formdata.append("Pan", form.Pan);
+            formdata.append("Quarter", "-1");
+            formdata.append("SessionId", "-1");
+            formdata.append("Token", loginToken);
+
+            const requestOptions = {
+                method: "POST",
+                body: formdata,
+                redirect: "follow",
+            };
+
+            const response = await fetch(URLActivity?.Form16Quarterly, requestOptions);
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+
+            const result = await response.json();
+            if (result?.result?.[0]?.IsFound === "True") {
+                // Alert.alert("Data Found");
+                setDownloadChallanfile(result.result);
+            } else {
+
+
+                setToastVisible(true);
+                const message = result.result[0]?.["Message "] || 'No message available';
+                setToastMessage(message);
+                setToastType('error');
+                setDownloadChallanfile([]);
+            }
+        } catch (error) {
+            console.error("Error fetching data:", error);
+            Alert.alert("Error", "Failed to fetch data. Please try again later.");
+        }
+    };
     const handleSearch = async () => {
         try {
             const formdata = new FormData();
             formdata.append("Pan", form.Pan);
             formdata.append("Quarter", form.Quarter);
             formdata.append("SessionId", form.SessionId);
-            console.log('Form Data:', formdata);
+            formdata.append("Token", loginToken);
+            // console.log('Form Data:', formdata);
             const requestOptions = {
                 method: "POST",
                 body: formdata,
@@ -60,13 +109,13 @@ export default function FormPartA26Q({ navigation }) {
             const response = await fetch(URLActivity?.Form16Quarterly, requestOptions);
             const result = await response.json();
             if (result?.result?.[0]?.IsFound === "True") {
-                Alert.alert("Data Found");
+                // Alert.alert("Data Found");
                 setDownloadChallanfile(result.result);
             } else {
 
 
                 setToastVisible(true);
-                const message = result[0]?.Message || 'No message available';
+                const message = result.result[0]?.["Message "] || 'No message available';
                 setToastMessage(message);
                 setToastType('error');
                 setDownloadChallanfile([]);
@@ -92,7 +141,7 @@ export default function FormPartA26Q({ navigation }) {
                 <View style={styles.container}>
                     <View style={styles.inputContainer}>
                         <Text style={styles.label}>
-                            Quarter Year <Text style={styles.asterisk}>*</Text>
+                            Quarter <Text style={styles.asterisk}>*</Text>
                         </Text>
                         <CustomQuartorPicker
                             placeholder={"Select Quarter Year"}
@@ -153,7 +202,7 @@ export default function FormPartA26Q({ navigation }) {
                         />
                     ) : (
                         <View style={{ alignItems: 'center', justifyContent: 'center', flex: 1 }}>
-                            <Text style={{ fontSize: wp(5), fontWeight: 'bold' }}>
+                            <Text style={{ fontSize: wp(5), fontWeight: 'bold', color: Colors.red }}>
                                 No Data Found
                             </Text>
                         </View>

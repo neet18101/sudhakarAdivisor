@@ -33,11 +33,14 @@ export default function CreateComplaints({ navigation }) {
   });
   const [userId, setUserId] = useState('');
   const [userRole, setUserRole] = useState('');
+  const [loginToken, setLoginToken] = useState('');
   useEffect(() => {
     const fetchUserData = async () => {
       try {
         const id = await AsyncStorage.getItem('id');
         const role = await AsyncStorage.getItem('role');
+        const LoginToken = await AsyncStorage.getItem('loginToken');
+        setLoginToken(LoginToken || '');
         setUserId(id || '');
         setUserRole(role || '');
       } catch (error) {
@@ -55,6 +58,7 @@ export default function CreateComplaints({ navigation }) {
       formData.append('SendByID', userId);
       formData.append('SendByRole', userRole);
       formData.append('Subject', form.subject);
+      formData.append('Token', loginToken);
       const requestOptions = {
         method: 'POST',
         body: formData,
@@ -67,7 +71,7 @@ export default function CreateComplaints({ navigation }) {
         setForm({ issueCategory: null, subject: '', description: '' });
       } else {
         if (result?.result?.[0]?.IsFound === 'False') {
-          Alert.alert('Error', result?.result?.[0]?.Message);
+          Alert.alert('Error', result?.result?.[0]?.['Message ']);
         }
       }
     } catch (error) {

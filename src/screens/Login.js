@@ -49,6 +49,7 @@ export default function Login({navigation}) {
       }
       if (data?.result[0]?.IsFound === 'True') {
         await AsyncStorage.setItem('userToken', data?.result[0]?.UserCode);
+        await AsyncStorage.setItem('loginToken', data?.result[0]?.Token);
         // userId
         await AsyncStorage.setItem('id', String(data?.result[0]?.UserId));
         await AsyncStorage.setItem('username', data?.result[0]?.Name);

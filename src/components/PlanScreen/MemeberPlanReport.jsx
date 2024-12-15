@@ -25,42 +25,88 @@ export default function MemeberPlanReport({ navigation }) {
         fromDate: '',
         toDate: '',
     });
+    const [loginToken, setLoginToken] = useState('');
+
 
     useEffect(() => {
-        const fetchToken = async () => {
-            const formdata = new FormData();
-            const member_id = await AsyncStorage.getItem('member_id');
-            formdata.append("MemberPlanId", "-1");
-            formdata.append("MemberId", member_id);
-            formdata.append("PlanDetailId", "-1");
-            formdata.append("MemberPlanNo", "");
-            formdata.append("Status", "Z");
-            formdata.append("Tan", "");
-            formdata.append("TransactionId", "");
-            formdata.append("FromDate", "01/01/2001");
-            formdata.append("ToDate", "23/11/2024");
+        const fetchUserToken = async () => {
+            try {
+                const userToken = await AsyncStorage.getItem("userToken");
+                const LoginToken = await AsyncStorage.getItem('loginToken');
+                setLoginToken(LoginToken || '');
+                if (userToken) {
+                    setForm((prevForm) => ({
+                        ...prevForm,
+                        tan: userToken,
+                    }));
+                }
+            } catch (error) {
+                console.error("Error fetching user token:", error);
+            }
+        };
+        fetchUserToken();
+    }, []);
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const member_id = await AsyncStorage.getItem("member_id");
+                if (!member_id) {
+                    console.warn("Member ID not found in AsyncStorage");
+                    return;
+                }
 
-            const requestOptions = {
-                method: "POST",
-                body: formdata,
-                redirect: "follow",
-            };
-            fetch("https://paytds.com/JsonService/MemberPlanDetail.aspx", requestOptions)
-                .then((response) => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! Status: ${response.status}`);
-                    }
-                    return response.json();
-                })
-                .then((result) => {
-                    setData(result?.result);
-                })
-                .catch((error) => console.error('Error:', error));
+                const formdata = new FormData();
+                formdata.append("MemberPlanId", "-1");
+                formdata.append("MemberId", member_id);
+                formdata.append("PlanDetailId", "-1");
+                formdata.append("MemberPlanNo", "");
+                formdata.append("Status", "Z");
+                formdata.append("Tan", "");
+                formdata.append("Token", loginToken);
+                formdata.append("TransactionId", "");
+                formdata.append("FromDate", "01/01/2001");
+                formdata.append("ToDate", "23/11/2024");
+
+                const requestOptions = {
+                    method: "POST",
+                    body: formdata,
+                    redirect: "follow",
+                };
+
+                const response = await fetch("https://paytds.com/JsonService/MemberPlanDetail.aspx", requestOptions);
+                let rawResponse = await response.text();
+
+                // Log the raw response
+                console.log("Raw Response:", rawResponse);
+
+                // Sanitize the response to handle invalid JSON
+                const sanitizedResponse = rawResponse.replace(/"""/g, '"'); // Replace triple quotes
+
+                try {
+                    // Parse the sanitized response
+                    const jsonResponse = JSON.parse(sanitizedResponse);
+                    setData(jsonResponse?.result || []);
+                } catch (jsonError) {
+                    console.error("Error parsing sanitized JSON:", jsonError);
+                    console.error("Sanitized Response:", sanitizedResponse);
+                }
+            } catch (error) {
+                console.error("Error fetching data:", error);
+            }
         };
 
-        fetchToken();
+        fetchData();
     }, []);
 
+    const handleSearch = () => {
+        if (!form.tan || !form.planType || !form.plan || !form.paymentMode) {
+            alert("Please fill in all required fields");
+            return;
+        }
+
+        // Add your search logic here based on the `form` state
+        console.log("Search clicked with form data:", form);
+    };
     const TableHeader = () => (
         <View style={styles.tableHeader}>
             <Text style={styles.headerText}>Plan Name</Text>
@@ -99,12 +145,13 @@ export default function MemeberPlanReport({ navigation }) {
                         </Text>
                         <TextInput
                             style={styles.input}
-                            value={form.transactionNo}
+                            value={form.tan}
                             onChangeText={tan => {
                                 setForm({ ...form, tan });
                             }}
                             placeholder="Enter TAN No."
                             placeholderTextColor="#6b7280"
+                            editable={false}
                         />
                     </View>
                     <View style={styles.inputContainer}>
@@ -143,13 +190,13 @@ export default function MemeberPlanReport({ navigation }) {
                     </View>
 
                     <View style={styles.inputContainer}>
-                        <TouchableOpacity style={styles.saveButton}>
+                        <TouchableOpacity style={styles.saveButton} onPress={handleSearch}>
                             <Text style={styles.buttonText}>Search</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
 
-                {data&&data?.length > 0 &&(
+                {data && data?.length > 0 && (
                     <MemberPlanReportTable
                         headers={['Sr. No.', 'Price (Rs.)', 'Description', 'Action']}
                         data={data.map((item, index) => ({
@@ -161,7 +208,7 @@ export default function MemeberPlanReport({ navigation }) {
 
                         }))}
                         onActionPress={(item) => handleSubmit(item)}
-                       
+
                     />
                 )}
             </ScrollView>
@@ -231,7 +278,7 @@ const styles = StyleSheet.create({
         color: '#333',
     },
     saveButton: {
-        backgroundColor:  Colors.primary,
+        backgroundColor: Colors.primary,
         paddingVertical: hp(1.5),
         paddingHorizontal: wp(6),
         borderRadius: wp(2),

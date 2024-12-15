@@ -24,16 +24,16 @@ const GlobalDepartmentByUserPhoneNumber = ({onValueChange, placeholder}) => {
           if (parsedData && parsedData.length > 0) {
             setData(parsedData);
             const defaultItem = parsedData[0];
+            console.log('defaultItem', defaultItem);
             setSelectedCategoryName(defaultItem.DepartmentName);
-            setDefaultTANDepartmentId(defaultItem.TANDepartmentId);
-            onValueChange(defaultItem.TANDepartmentId);
+            setDefaultTANDepartmentId(defaultItem.MemberId);
+            onValueChange(defaultItem.MemberId);
           }
         }
       } catch (error) {
         console.error('Error retrieving data from AsyncStorage:', error);
       }
     };
-
     fetchDataFromStorage();
   }, []);
 

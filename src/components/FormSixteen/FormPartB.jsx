@@ -8,7 +8,7 @@ import {
 } from 'react-native-responsive-screen';
 import Icon from 'react-native-vector-icons/Ionicons';
 import GlobalDepartmentByUserPhoneNumber from "../../common/GlobalDepartmentByUserPhoneNumber";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import CustomYearPicker from "../../common/Year";
 import CustomQuartorPicker from "../../common/Quarter";
 import URLActivity from "../../utlis/URLActivity";
@@ -16,25 +16,63 @@ import DataTable from "../DataTable";
 import AReportDownload from "../../common/DataTable/AReportDownload";
 import CustomMonthPicker from "../../common/Month";
 import SessionPicker from "../../common/SessionPicker";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 export default function FormPartB({ navigation }) {
     const [form, setForm] = useState({
         Pan: "",
         Part: "B",
-        SessionId: ""
+        SessionId: "-1",
     });
     const [downloadChallanfile, setDownloadChallanfile] = useState(null);
-    const handleSearch = async () => {
+    const [loginToken, setLoginToken] = useState('');
+
+    // Fetch user token from AsyncStorage on mount
+    useEffect(() => {
+        const fetchUserToken = async () => {
+            try {
+                const userToken = await AsyncStorage.getItem("userToken");
+                const loginToken = await AsyncStorage.getItem('loginToken');
+                setLoginToken(loginToken || '');
+
+                if (userToken) {
+                    setForm((prevForm) => ({
+                        ...prevForm,
+                        Pan: userToken,
+                    }));
+                }
+            } catch (error) {
+                console.error("Error fetching user token:", error);
+            }
+        };
+        fetchUserToken();
+    }, []);
+
+    // Auto-fetch data whenever Pan changes
+    useEffect(() => {
+        if (form.Pan) {
+            fetchData();
+        }
+    }, [form.Pan]);
+
+    const fetchData = async () => {
         try {
             const formdata = new FormData();
             formdata.append("Pan", form.Pan);
             formdata.append("Part", form.Part);
             formdata.append("SessionId", form.SessionId);
+            formdata.append("Token", loginToken);
+
             const requestOptions = {
                 method: "POST",
                 body: formdata,
                 redirect: "follow",
             };
+
             const response = await fetch(URLActivity?.PartA_PartBForm16, requestOptions);
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+
             const result = await response.json();
             if (result?.result?.[0]?.IsFound === "True") {
                 setDownloadChallanfile(result.result);
@@ -43,19 +81,27 @@ export default function FormPartB({ navigation }) {
                 setDownloadChallanfile([]);
             }
         } catch (error) {
-            console.error("Error during API call:", error);
+            console.error("Error fetching data:", error);
             Alert.alert("Error", "Failed to fetch data. Please try again later.");
         }
     };
-    console.log(form);
+
+    const handleSearch = () => {
+        if (!form.SessionId || form.SessionId === "-1") {
+            Alert.alert("Validation Error", "Please select a financial year.");
+            return;
+        }
+        fetchData();
+    };
+
     return (
         <View style={{ flex: 1 }}>
             <View style={styles.stickyHeader}>
                 <GlobalHeader
-                    title={"Form Part B"}
+                    title="Form Part B"
                     leftComponent={
                         <TouchableOpacity onPress={() => navigation.goBack()}>
-                            <Icon name="arrow-back" size={wp(6)} color={Colors.white} />
+                            <Icon name="arrow-back" size={wp(6)} color="#fff" />
                         </TouchableOpacity>
                     }
                 />
@@ -67,62 +113,58 @@ export default function FormPartB({ navigation }) {
                             Financial Year <Text style={styles.asterisk}>*</Text>
                         </Text>
                         <SessionPicker
-                            placeholder={"Select Financial Year"}
-                            onValueChange={value => {
-                                setForm({ ...form, SessionId: value });
-                            }}
+                            placeholder="Select Financial Year"
+                            onValueChange={(value) =>
+                                setForm((prevForm) => ({
+                                    ...prevForm,
+                                    SessionId: value,
+                                }))
+                            }
                         />
                     </View>
                     <View style={styles.inputContainer}>
                         <Text style={styles.label}>
-                            Pan <Text style={styles.asterisk}>*</Text>
+                            PAN <Text style={styles.asterisk}>*</Text>
                         </Text>
                         <TextInput
                             autoCapitalize="characters"
                             autoCorrect={false}
                             clearButtonMode="while-editing"
                             keyboardType="email-address"
-                            onChangeText={Pan => setForm({ ...form, Pan })}
-                            placeholder="Enter a Pan"
+                            placeholder="Enter PAN"
                             placeholderTextColor="#6b7280"
                             maxLength={10}
                             style={styles.inputControl}
                             value={form.Pan}
+                            editable={false} // PAN is fetched and cannot be edited
                         />
-
-
                     </View>
-
                     <View style={styles.buttonContainer}>
                         <TouchableOpacity style={styles.saveButton} onPress={handleSearch}>
                             <Text style={styles.buttonText}>Search</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
-                {
-                    downloadChallanfile && downloadChallanfile.length > 0 ? (
-                        <AReportDownload
-                            headers={['Sr. No', 'Pan', 'Session', 'Action']}
-                            data={downloadChallanfile.map((item, index) => ({
-                                srNo: index + 1,
-                                DepartmentName: item.Pan,
-                                year: item.M02_SessionId,
-                                downloadUrl: item.Path,
-                            }))}
-                            actionText="Download"
-                        />
-                    ) : (
-                        <View style={{ alignItems: 'center', justifyContent: 'center', flex: 1 }}>
-                            <Text style={{ fontSize: wp(5), fontWeight: 'bold' }}>
-                                No Data Found
-                            </Text>
-                        </View>
-                    )
-                }
-            </ScrollView>
 
+                {downloadChallanfile && downloadChallanfile.length > 0 ? (
+                    <AReportDownload
+                        headers={["Sr. No", "Pan", "Session", "Action"]}
+                        data={downloadChallanfile.map((item, index) => ({
+                            srNo: index + 1,
+                            DepartmentName: item.Pan,
+                            year: item.M02_SessionId,
+                            downloadUrl: item.Path,
+                        }))}
+                        actionText="Download"
+                    />
+                ) : (
+                    <View style={styles.noDataContainer}>
+                        <Text style={styles.noDataText}>No Data Found</Text>
+                    </View>
+                )}
+            </ScrollView>
         </View>
-    )
+    );
 }
 const styles = StyleSheet.create({
     stickyHeader: {

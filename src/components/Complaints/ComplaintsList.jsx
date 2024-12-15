@@ -18,6 +18,7 @@ import StatusPicker from '../StatusPicker';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import URLActivity from '../../utlis/URLActivity';
+import Toast from '../../common/Toast';
 
 export default function ComplaintsList({ navigation }) {
   const [complaintType, setComplaintType] = useState('');
@@ -30,12 +31,21 @@ export default function ComplaintsList({ navigation }) {
   const [userId, setUserId] = useState('');
   const [userRole, setUserRole] = useState('');
   const [tableData, setTableData] = useState([]);
+  const [errors, setErrors] = useState({});
+
+
+  const [toastVisible, setToastVisible] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastType, setToastType] = useState('success');
+  const [loginToken, setLoginToken] = useState('');
 
   useEffect(() => {
     const fetchUserData = async () => {
       try {
         const id = await AsyncStorage.getItem('id');
         const role = await AsyncStorage.getItem('role');
+        const LoginToken = await AsyncStorage.getItem('loginToken');
+        setLoginToken(LoginToken || '');
         setUserId(id || '');
         setUserRole(role || '');
       } catch (error) {
@@ -71,6 +81,7 @@ export default function ComplaintsList({ navigation }) {
         formdata.append("RoleCode", "U");
         formdata.append("TicketTypeID", "1");
         formdata.append("FromDate", "01/01/2001");
+        formdata.append("Token", loginToken);
         formdata.append("ToDate", getFormattedDate());
 
         const requestOptions = {
@@ -80,7 +91,7 @@ export default function ComplaintsList({ navigation }) {
         };
 
         console.log("Fetching data with formdata:", {
-          CustID: userId,
+          CustID: id,
           RoleCode: "U",
           TicketTypeID: "1",
           FromDate: "01/01/2001",
@@ -97,7 +108,14 @@ export default function ComplaintsList({ navigation }) {
         console.log("API response:", result);
 
         if (result && result.result) {
-          setTableData(result.result); // Update the table data
+          const firstResult = result.result[0];
+
+          if (firstResult.IsFound === "False") {
+            console.warn(firstResult["Message "]); // Log the warning message
+            setTableData([]); // Set empty data when no tickets are found
+          } else {
+            setTableData(result.result); // Update the table data when tickets are found
+          }
         } else {
           console.warn("Unexpected response format");
           setTableData([]); // Set empty data if the result format is unexpected
@@ -112,8 +130,23 @@ export default function ComplaintsList({ navigation }) {
   }, []);
 
 
+  const validateFields = () => {
+    const newErrors = {};
+    if (!complaintType) newErrors.complaintType = 'Please select a complaint type.';
+    if (!status) newErrors.status = 'Please select a status.';
+    if (!fromDate) newErrors.fromDate = 'Please select a from date.';
+    if (!toDate) newErrors.toDate = 'Please select a to date.';
+    if (new Date(fromDate) > new Date(toDate))
+      newErrors.dateRange = 'From date cannot be later than To date.';
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const onSubmit = async () => {
+    if (!validateFields()) {
+      return;
+    }
+
     try {
       const formData = new FormData();
       formData.append('CustID', userId);
@@ -121,6 +154,7 @@ export default function ComplaintsList({ navigation }) {
       formData.append('TicketTypeID', complaintType);
       formData.append('FromDate', fromDate);
       formData.append('ToDate', toDate);
+      formData.append("Token", loginToken);
       const response = await fetch(URLActivity?.TicketList, {
         method: 'POST',
         body: formData,
@@ -129,11 +163,16 @@ export default function ComplaintsList({ navigation }) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
       const result = await response.json();
-      if (result && result.result) {
+      console.log(result?.result?.[0]?.IsFound);
+      if (result && result?.result?.[0]?.IsFound === 'True') {
         setTableData(result.result);
       } else {
-        console.error('Unexpected response format');
+        setToastVisible(true);
+        const message = result.result[0]?.["Message "] || 'No message available';
+        setToastMessage(message);
+        setToastType('error');
         setTableData([]);
+
       }
     } catch (error) {
       console.error('An error occurred while fetching data:', error);
@@ -141,7 +180,7 @@ export default function ComplaintsList({ navigation }) {
   };
 
   const renderRow = ({ item, index }) => {
-    const createdDate = item.CreatedOn.split(' ')[0];
+    const createdDate = item?.CreatedOn?.split(' ')[0];
     return (
       <View style={[styles.row, index % 2 === 0 ? styles.evenRow : styles.oddRow]}>
         <Text style={styles.cell}>{index + 1}</Text>
@@ -176,9 +215,11 @@ export default function ComplaintsList({ navigation }) {
             selectedValue={complaintType}
             onValueChange={setComplaintType}
           />
+          {errors.complaintType && <Text style={styles.errorText}>{errors.complaintType}</Text>}
 
           <Text style={styles.label}>Status</Text>
           <StatusPicker placeholder="Select Status" selectedValue={status} onValueChange={setStatus} />
+          {errors.status && <Text style={styles.errorText}>{errors.status}</Text>}
 
           <Text style={styles.label}>From Date</Text>
           <TouchableOpacity onPress={() => setShowFromDatePicker(true)} style={styles.input}>
@@ -194,6 +235,7 @@ export default function ComplaintsList({ navigation }) {
               onChange={(event, date) => handleDateChange(event, date, setFromDate, setShowFromDatePicker)}
             />
           )}
+          {errors.fromDate && <Text style={styles.errorText}>{errors.fromDate}</Text>}
 
           <Text style={styles.label}>To Date</Text>
           <TouchableOpacity onPress={() => setShowToDatePicker(true)} style={styles.input}>
@@ -209,6 +251,7 @@ export default function ComplaintsList({ navigation }) {
               onChange={(event, date) => handleDateChange(event, date, setToDate, setShowToDatePicker)}
             />
           )}
+          {errors.toDate && <Text style={styles.errorText}>{errors.toDate}</Text>}
 
           <Text style={styles.label}>Agent/Cust Name, Ticket No</Text>
           <TextInput
@@ -229,22 +272,39 @@ export default function ComplaintsList({ navigation }) {
           </View>
         </View>
 
-        <ScrollView horizontal style={styles.tableContainer}>
-          <FlatList
-            data={tableData}
-            keyExtractor={(item, index) => index.toString()}
-            renderItem={renderRow}
-            ListHeaderComponent={() => (
-              <View style={[styles.row, styles.headerRow]}>
-                <Text style={[styles.cell, styles.headerText]}>Sr No</Text>
-                <Text style={[styles.cell, styles.headerText]}>Ticket No</Text>
-                <Text style={[styles.cell, styles.headerText]}>Name</Text>
-                <Text style={[styles.cell, styles.headerText]}>Created On</Text>
-                <Text style={[styles.cell, styles.headerText]}>Status</Text>
-              </View>
-            )}
-          />
-        </ScrollView>
+        {
+          tableData.length > 0
+            ? <ScrollView horizontal style={styles.tableContainer}>
+              <FlatList
+                data={tableData}
+                keyExtractor={(item, index) => index.toString()}
+                renderItem={renderRow}
+                ListHeaderComponent={() => (
+                  <View style={[styles.row, styles.headerRow]}>
+                    <Text style={[styles.cell, styles.headerText]}>Sr No</Text>
+                    <Text style={[styles.cell, styles.headerText]}>Ticket No</Text>
+                    <Text style={[styles.cell, styles.headerText]}>Name</Text>
+                    <Text style={[styles.cell, styles.headerText]}>Created On</Text>
+                    <Text style={[styles.cell, styles.headerText]}>Status</Text>
+                  </View>
+                )}
+              />
+            </ScrollView>
+
+            : <View style={styles.noDataContainer}>
+              <Text style={styles.noDataText}>No Data Found</Text>
+            </View>
+        }
+        <Toast
+          visible={toastVisible}
+          message={toastMessage}
+          type={toastType}
+          onHide={() => setToastVisible(false)}
+          duration={3000}
+          positionType="bottom-to-top"
+        />
+
+
       </ScrollView>
     </View>
   );
@@ -341,5 +401,20 @@ const styles = StyleSheet.create({
   linkText: {
     color: Colors.primary,
     textDecorationLine: 'underline',
+  },
+  errorText: {
+    color: 'red',
+    fontSize: wp(3.5),
+    marginTop: hp(0.5),
+  },
+  noDataContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  noDataText: {
+    fontSize: wp(4),
+    color: Colors.red,
+    fontWeight: 'bold',
   },
 });

@@ -15,6 +15,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 export default function BuyPlan({ navigation }) {
     const [deviceId, setDeviceId] = useState('');
     const [memberId, setMemberId] = useState('');
+    const [loginToken, setLoginToken] = useState('');
     useEffect(() => {
         DeviceInfo.getAndroidId().then((id) => {
             setDeviceId(id);
@@ -22,6 +23,8 @@ export default function BuyPlan({ navigation }) {
         const fetchToken = async () => {
             try {
                 const member_id = await AsyncStorage.getItem('member_id');
+                const LoginToken = await AsyncStorage.getItem('loginToken');
+                setLoginToken(LoginToken || '');
                 if (member_id) {
                     setMemberId(member_id);
                 }
@@ -81,6 +84,7 @@ export default function BuyPlan({ navigation }) {
             formdata.append("TransactionNo", form.transactionNo);
             formdata.append("PaymentModeId", form.paymentMode);
             formdata.append("Remark", form.remark);
+            formdata.append("Token", loginToken);
             formdata.append("DeviceID", deviceId);
             const requestOptions = {
                 method: "POST",
@@ -120,6 +124,7 @@ export default function BuyPlan({ navigation }) {
         formdata.append("PlanId", form.plan);
         formdata.append("PlanCategoryId", form.planType);
         formdata.append("Status", "Z");
+        formdata.append("Token", loginToken);
         const requestOptions = {
             method: "POST",
             body: formdata,
@@ -233,7 +238,7 @@ export default function BuyPlan({ navigation }) {
                         {error.remark ? <Text style={styles.errorText}>{error.remark}</Text> : null}
                     </View>
                 </View>
-                {tableData&&tableData?.length > 0 &&(
+                {tableData && tableData?.length > 0 && (
                     <DataTable
                         headers={['Sr. No.', 'Price (Rs.)', 'Description', 'Action']}
                         data={tableData.map((item, index) => ({

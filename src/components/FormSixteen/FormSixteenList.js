@@ -43,12 +43,17 @@ const FormSixteenList = () => {
       name: 'Form 16 Part B',
       navigation: 'FormPartB',
     },
+    {
+      icon: 'document-text-outline',
+      name: 'Form 16 (26Q)',
+      navigation: 'FormPartA26Q',
+    },
   ];
   const Employee26 = [
     {
       icon: 'document-text-outline',
       name: 'Form 16 (26Q)',
-      navigation: 'FormPartA26Q' 
+      navigation: 'FormPartA26Q',
     },
   ];
 
@@ -65,7 +70,7 @@ const FormSixteenList = () => {
       <View style={styles.container}>
         <Text style={styles.featuresText}>Form 16 Options</Text>
         <FlatList
-          data={isRegisType ? Employee26 : options}
+          data={options}
           renderItem={({item}) => (
             <TouchableOpacity
               style={styles.optionButton}

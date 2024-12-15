@@ -32,20 +32,20 @@ export default function Feature({ navigation, Employee27 }) {
                         File e-Form Active (INC-22A) of your company for Active Company Tagging.
                     </Text>
                 </View>
-                {!Employee27 && (
-                    <View style={[styles.listCategory, { backgroundColor: '#A5F3FCFF' }]}>
-                        <TouchableOpacity onPress={() => navigation.navigate('FormSixteen')}>
-                            <View style={styles.listOption}>
-                                <Image source={require('../../assets/images/form.png')} style={styles.icon} />
-                                <Text style={styles.listText}>Form 16</Text>
-                            </View>
-                            <Text style={styles.listParagraph}>
-                                Finding it tough to calculate taxes and deductions? Here are some tools that can help solve your problem.
-                            </Text>
-                        </TouchableOpacity>
-                    </View>
 
-                )}
+                <View style={[styles.listCategory, { backgroundColor: '#A5F3FCFF' }]}>
+                    <TouchableOpacity onPress={() => navigation.navigate('FormSixteen')}>
+                        <View style={styles.listOption}>
+                            <Image source={require('../../assets/images/form.png')} style={styles.icon} />
+                            <Text style={styles.listText}>Form 16</Text>
+                        </View>
+                        <Text style={styles.listParagraph}>
+                            Finding it tough to calculate taxes and deductions? Here are some tools that can help solve your problem.
+                        </Text>
+                    </TouchableOpacity>
+                </View>
+
+
                 {/* Form 16 */}
                 {/* Download Challan Receipt */}
                 <View style={[styles.listCategory, { backgroundColor: '#FCD5A5' }]}>

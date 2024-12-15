@@ -23,6 +23,7 @@ export default function ChallanReport({ navigation }) {
     });
     const [downloadChallanfile, setDownloadChallanfile] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [loginToken, setLoginToken] = useState(null);
     const handleSearch = async () => {
         setIsLoading(true);
         try {
@@ -30,6 +31,7 @@ export default function ChallanReport({ navigation }) {
             formdata.append("DepartmentTANId", form.DepartmentTANId);
             formdata.append("YearId", form.YearId);
             formdata.append("MonthId", form.MonthId);
+            formdata.append("Token", loginToken);
 
             const requestOptions = {
                 method: "POST",
@@ -52,12 +54,15 @@ export default function ChallanReport({ navigation }) {
     };
     useEffect(() => {
         const fetch27AFile = async () => {
+            const Token = await AsyncStorage.getItem('loginToken');
+            setLoginToken(Token || '');
             setIsLoading(true);
             try {
                 const formdata = new FormData();
                 formdata.append("DepartmentTANId", form.DepartmentTANId);
                 formdata.append("YearId", "-1");
                 formdata.append("MonthId", "-1");
+                formdata.append("Token", loginToken);
 
                 const requestOptions = {
                     method: "POST",
@@ -152,7 +157,7 @@ export default function ChallanReport({ navigation }) {
                         />
                     ) : (
                         <View style={{ alignItems: 'center', justifyContent: 'center', flex: 1 }}>
-                            <Text style={{ fontSize: wp(5), fontWeight: 'bold' }}>
+                            <Text style={{ fontSize: wp(5), fontWeight: 'bold' , color:Colors.red }}>
                                 No Data Found
                             </Text>
                         </View>

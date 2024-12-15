@@ -60,7 +60,7 @@ const Home = ({navigation}) => {
       console.error('API Error:', error);
     }
   };
-  
+
   return (
     <>
       <View style={styles.container}>
