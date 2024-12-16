@@ -26,6 +26,7 @@ export default function AcknowledgementUpdateReceiptForm({ navigation }) {
 
     const handleSearch = async () => {
         setIsLoading(true);
+  
         try {
             const formdata = new FormData();
             formdata.append("DepartmentTANId", form.DepartmentTANId);
@@ -85,7 +86,7 @@ export default function AcknowledgementUpdateReceiptForm({ navigation }) {
         fetchAcknowledgementFile();
     }, [form.DepartmentTANId]);
 
-    console.log(download27Afile);
+    // console.log(download27Afile);
 
     return (
         <View style={{ flex: 1 }}>

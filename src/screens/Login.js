@@ -33,7 +33,7 @@ export default function Login({navigation}) {
     formData.append('UserId', userID);
     formData.append('Password', password);
     formData.append('DeviceID', '');
-    console.log('Form Data:', formData);
+    // console.log('Form Data:', formData);
 
     try {
       const response = await fetch(URLActivity.LoginLICAgent, {

@@ -141,7 +141,7 @@ export default function Signup({navigation}) {
       }
 
       const responseData = await response.json();
-      console.log(responseData, 'ji');
+      // console.log(responseData, 'ji');
 
       const result = responseData.result?.[0];
       if (result?.IsFound === 'True') {
@@ -152,7 +152,7 @@ export default function Signup({navigation}) {
           navigation.navigate('Login');
         }, 2000);
       } else {
-        console.log(result);
+        // console.log(result);
         setToastVisible(true);
         const message = result?.['Message '] || 'No message available';
         setToastMessage(message);

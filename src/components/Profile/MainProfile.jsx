@@ -115,16 +115,6 @@ export default function MainProfile() {
       formdata.append("regisType", form.regisType);
       formdata.append("TAN_PAN", form.userToken);
 
-      console.log("Submitting form data:", {
-        CityID: form.city,
-        Mobile: form.phoneNo,
-        Address: "Address",
-        EmailId: form.email,
-        DepartmentID: form.DepartmentId,
-        Name: form.name,
-        regisType: form.regisType,
-        TAN_PAN: form.userToken,
-      });
 
       const requestOptions = {
         method: "POST",
@@ -139,10 +129,10 @@ export default function MainProfile() {
       }
 
       const result = await response.json();
-      console.log("Server response:", result);
+      // console.log("Server response:", result);
       if (result && result.result[0]?.IsFound === "True") {
         const message = result.result[0]?.["Message "] || "Profile updated successfully!";
-        console.log("Success message:", message);
+        // console.log("Success message:", message);
         setToastVisible(true);
         setToastMessage(message);
         setToastType("success");
@@ -220,7 +210,18 @@ export default function MainProfile() {
                   <View style={styles.row}>
                     <Text style={styles.rowLabel}>Department</Text>
                     <View style={styles.rowSpacer} />
-                    <Text style={[styles.rowValue, { textTransform: 'capitalize', fontSize: 13 }]}>
+                    <Text
+                      style={[
+                        styles.rowValue,
+                        {
+                          textTransform: 'capitalize',
+                          alignContent: 'center',
+                          textAlign:'right',
+                          flexWrap: 'wrap',
+                          width: 250, // Set a fixed or percentage-based width
+                        }
+                      ]}
+                    >
                       {userInfo[0]?.DepartmentName || 'N/A'}
                     </Text>
                   </View>
@@ -313,7 +314,7 @@ export default function MainProfile() {
                     <ProfileCitySelet
                       selectedValue={userInfo[0]?.CityId}
                       onValueChange={(cityId) => {
-                        console.log(cityId, 'cityId');
+                        // console.log(cityId, 'cityId');
                         const selectedCity = userInfo?.find((item) => parseInt(item.CityId) === parseInt(cityId)) || setForm({ ...form, cityId });
                         setForm({ ...form, city: cityId || userInfo[0]?.CityId });
                       }}

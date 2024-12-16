@@ -73,7 +73,7 @@ export default function FormPartA({ navigation }) {
       if (result?.result?.[0]?.IsFound === "True") {
         setDownloadChallanfile(result.result);
       } else {
-        console.log("No Data Found:", result?.result?.[0]?.Message);
+        // console.log("No Data Found:", result?.result?.[0]?.Message);
         setDownloadChallanfile([]);
       }
     } catch (error) {

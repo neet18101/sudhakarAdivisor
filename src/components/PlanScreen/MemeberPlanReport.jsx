@@ -26,6 +26,14 @@ export default function MemeberPlanReport({ navigation }) {
         toDate: '',
     });
     const [loginToken, setLoginToken] = useState('');
+    const getFormattedDate = () => {
+        const now = new Date();
+        const day = String(now.getDate()).padStart(2, '0'); // Ensure 2-digit day
+        const month = String(now.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+        const year = now.getFullYear();
+        return `${day}/${month}/${year}`;
+    };
+
 
 
     useEffect(() => {
@@ -77,7 +85,7 @@ export default function MemeberPlanReport({ navigation }) {
                 let rawResponse = await response.text();
 
                 // Log the raw response
-                console.log("Raw Response:", rawResponse);
+                // console.log("Raw Response:", rawResponse);
 
                 // Sanitize the response to handle invalid JSON
                 const sanitizedResponse = rawResponse.replace(/"""/g, '"'); // Replace triple quotes
@@ -99,13 +107,55 @@ export default function MemeberPlanReport({ navigation }) {
     }, []);
 
     const handleSearch = () => {
-        if (!form.tan || !form.planType || !form.plan || !form.paymentMode) {
-            alert("Please fill in all required fields");
-            return;
-        }
+        const fetchData = async () => {
+            try {
+                const member_id = await AsyncStorage.getItem("member_id");
+                if (!member_id) {
+                    console.warn("Member ID not found in AsyncStorage");
+                    return;
+                }
 
-        // Add your search logic here based on the `form` state
-        console.log("Search clicked with form data:", form);
+                const formdata = new FormData();
+                formdata.append("MemberPlanId", "-1");
+                formdata.append("MemberId", member_id);
+                formdata.append("PlanDetailId", form.plan || "-1");
+                formdata.append("MemberPlanNo", "");
+                formdata.append("Status", "Z");
+                formdata.append("Tan", "");
+                formdata.append("Token", loginToken);
+                formdata.append("TransactionId", "");
+                formdata.append("FromDate", "01/01/2001");
+                formdata.append("ToDate", getFormattedDate());
+
+                const requestOptions = {
+                    method: "POST",
+                    body: formdata,
+                    redirect: "follow",
+                };
+
+                const response = await fetch("https://paytds.com/JsonService/MemberPlanDetail.aspx", requestOptions);
+                let rawResponse = await response.text();
+
+                // Log the raw response
+                // console.log("Raw Response:", rawResponse);
+
+                // Sanitize the response to handle invalid JSON
+                const sanitizedResponse = rawResponse.replace(/"""/g, '"'); // Replace triple quotes
+
+                try {
+                    // Parse the sanitized response
+                    const jsonResponse = JSON.parse(sanitizedResponse);
+                    setData(jsonResponse?.result || []);
+                } catch (jsonError) {
+                    console.error("Error parsing sanitized JSON:", jsonError);
+                    console.error("Sanitized Response:", sanitizedResponse);
+                }
+            } catch (error) {
+                console.error("Error fetching data:", error);
+            }
+        };
+
+        fetchData();
     };
     const TableHeader = () => (
         <View style={styles.tableHeader}>

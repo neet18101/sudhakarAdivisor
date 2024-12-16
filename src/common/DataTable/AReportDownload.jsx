@@ -15,7 +15,7 @@ const AReportDownload = ({ headers, data, onActionPress, actionText }) => {
         setModalVisible(true);
     }
     const handleFileDownload = async (fileUrl) => {
-        console.log(fileUrl, "hii nav")
+        // console.log(fileUrl, "hii nav")
         try {
             const { config, fs } = RNFetchBlob;
             const downloads = fs.dirs.DownloadDir; 
@@ -29,7 +29,7 @@ const AReportDownload = ({ headers, data, onActionPress, actionText }) => {
                 },
             };
             const res = await config(options).fetch('GET', fileUrl?.downloadUrl);
-            console.log('File downloaded successfully:', res.path());
+            // console.log('File downloaded successfully:', res.path());
             // showToast('File downloaded successfully', 'success');
         } catch (error) {
             console.error('Error downloading file:', error);

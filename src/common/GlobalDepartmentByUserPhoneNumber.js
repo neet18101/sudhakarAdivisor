@@ -24,7 +24,7 @@ const GlobalDepartmentByUserPhoneNumber = ({onValueChange, placeholder}) => {
           if (parsedData && parsedData.length > 0) {
             setData(parsedData);
             const defaultItem = parsedData[0];
-            console.log('defaultItem', defaultItem);
+            // console.log('defaultItem', defaultItem);
             setSelectedCategoryName(defaultItem.DepartmentName);
             setDefaultTANDepartmentId(defaultItem.MemberId);
             onValueChange(defaultItem.MemberId);

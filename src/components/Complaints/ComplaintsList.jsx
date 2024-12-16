@@ -89,29 +89,18 @@ export default function ComplaintsList({ navigation }) {
           body: formdata,
           redirect: "follow",
         };
-
-        console.log("Fetching data with formdata:", {
-          CustID: id,
-          RoleCode: "U",
-          TicketTypeID: "1",
-          FromDate: "01/01/2001",
-          ToDate: getFormattedDate(),
-        });
-
+       
         const response = await fetch(URLActivity?.TicketList, requestOptions);
-
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
-
         const result = await response.json();
-        console.log("API response:", result);
 
         if (result && result.result) {
           const firstResult = result.result[0];
 
           if (firstResult.IsFound === "False") {
-            console.warn(firstResult["Message "]); // Log the warning message
+            // console.warn(firstResult["Message "]); // Log the warning message
             setTableData([]); // Set empty data when no tickets are found
           } else {
             setTableData(result.result); // Update the table data when tickets are found
@@ -143,18 +132,20 @@ export default function ComplaintsList({ navigation }) {
   };
 
   const onSubmit = async () => {
-    if (!validateFields()) {
-      return;
-    }
+    // if (!validateFields()) {
+    //   return;
+    // }
 
     try {
       const formData = new FormData();
       formData.append('CustID', userId);
       formData.append('RoleCode', userRole);
-      formData.append('TicketTypeID', complaintType);
-      formData.append('FromDate', fromDate);
-      formData.append('ToDate', toDate);
+      formData.append('TicketTypeID', complaintType || "-1");
+      formData.append('FromDate', fromDate || "01/01/2001");
+      formData.append("ToDate", getFormattedDate());
       formData.append("Token", loginToken);
+      // console.log("Form Data:", formData);
+
       const response = await fetch(URLActivity?.TicketList, {
         method: 'POST',
         body: formData,
@@ -163,7 +154,7 @@ export default function ComplaintsList({ navigation }) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
       const result = await response.json();
-      console.log(result?.result?.[0]?.IsFound);
+      // console.log(result?.result?.[0]?.IsFound);
       if (result && result?.result?.[0]?.IsFound === 'True') {
         setTableData(result.result);
       } else {
@@ -217,9 +208,9 @@ export default function ComplaintsList({ navigation }) {
           />
           {errors.complaintType && <Text style={styles.errorText}>{errors.complaintType}</Text>}
 
-          <Text style={styles.label}>Status</Text>
-          <StatusPicker placeholder="Select Status" selectedValue={status} onValueChange={setStatus} />
-          {errors.status && <Text style={styles.errorText}>{errors.status}</Text>}
+          {/* <Text style={styles.label}>Status</Text> */}
+          {/* <StatusPicker placeholder="Select Status" selectedValue={status} onValueChange={setStatus} />
+          {errors.status && <Text style={styles.errorText}>{errors.status}</Text>} */}
 
           <Text style={styles.label}>From Date</Text>
           <TouchableOpacity onPress={() => setShowFromDatePicker(true)} style={styles.input}>

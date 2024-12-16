@@ -27,7 +27,7 @@ const ProfileDepartmentSelect = ({
   useEffect(() => {
     if (data && selectedValue) {
       const selected = data.find(item => item.DepartmentID === selectedValue);
-      console.log(selected, 'selectedCity');
+      // console.log(selected, 'selectedCity');
 
       if (selected) {
         setSelectedCategoryName(selected.Department);

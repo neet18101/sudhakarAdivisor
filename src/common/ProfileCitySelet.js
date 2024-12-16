@@ -19,12 +19,12 @@ const ProfileCitySelet = ({selectedValue, onValueChange, placeholder}) => {
   const [filteredData, setFilteredData] = useState(data);
   const [selectedCategoryName, setSelectedCategoryName] = useState('');
   const searchRef = useRef();
-  console.log(selectedValue, 'selectedValue');
+  // console.log(selectedValue, 'selectedValue');
 
   useEffect(() => {
     if (data && selectedValue) {
       const selectedCity = data.find(item => item.CityID === selectedValue);
-      console.log(selectedCity, 'selectedCity');
+      // console.log(selectedCity, 'selectedCity');
 
       if (selectedCity) {
         setSelectedCategoryName(selectedCity.City);
